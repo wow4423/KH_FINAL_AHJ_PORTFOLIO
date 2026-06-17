@@ -1,0 +1,166 @@
+/* ================================
+   Portfolio Header
+================================ */
+
+.portfolio-header {
+  width: 100%;
+  height: 86px;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+
+  background: transparent;
+  color: #ffffff;
+}
+
+.portfolio-header-inner {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+  padding: 0 clamp(28px, 4vw, 72px);
+
+  display: flex;
+  align-items: center;
+}
+
+/* Logo */
+.portfolio-logo {
+  position: relative;
+  z-index: 2;
+
+  width: 130px;
+  height: 82px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  text-decoration: none;
+
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.portfolio-logo img {
+  width: 120px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.portfolio-logo:hover {
+  opacity: 0.82;
+  transform: translateY(-1px);
+}
+
+/* Center Navigation */
+.portfolio-nav {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 1.1vw, 22px);
+
+  transform: translate(-50%, -50%);
+}
+
+.portfolio-nav-button {
+  height: 48px;
+  padding: 0 17px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.58);
+
+  font-family: "PyeojinGothic", "Noto Sans KR", sans-serif;
+
+  font-size: clamp(13px, 0.85vw, 16px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+
+  cursor: pointer;
+
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.portfolio-nav-button:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.portfolio-nav-button.active {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.portfolio-nav-button.active:hover {
+  transform: translateY(-1px);
+}
+
+/* ================================
+   Responsive
+================================ */
+
+@media (max-width: 900px) {
+  .portfolio-header {
+    height: auto;
+  }
+
+  .portfolio-header-inner {
+    min-height: 86px;
+    padding: 16px 22px 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .portfolio-logo {
+    width: 86px;
+    height: 54px;
+  }
+
+  .portfolio-logo img {
+    width: 80px;
+  }
+
+  .portfolio-nav {
+    position: static;
+
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+
+    transform: none;
+  }
+
+  .portfolio-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .portfolio-nav-button {
+    height: 40px;
+    padding: 0 14px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    font-size: 13px;
+  }
+}

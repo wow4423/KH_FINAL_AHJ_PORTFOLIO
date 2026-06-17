@@ -1,135 +1,71 @@
 /* ================================
    Font
-   - 프로젝트 기본 폰트: Paperlogy
-   - font-weight 100 ~ 900 사용 가능
+   - 조선일보명조체: 포인트 타이틀 / 감성 문구용
+   - 펴진고딕: 기본 본문 / UI 텍스트용
 ================================ */
 
+/* 조선일보명조체 */
 @font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-1Thin.woff2")
-    format("woff2");
-  font-weight: 100;
+  font-family: "ChosunIlboMyungjo";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/Chosunilbo_myungjo.woff")
+    format("woff");
+  font-weight: normal;
   font-display: swap;
 }
 
+/* 펴진고딕 Light */
 @font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-2ExtraLight.woff2")
-    format("woff2");
-  font-weight: 200;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-3Light.woff2")
+  font-family: "PyeojinGothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Light.woff2")
     format("woff2");
   font-weight: 300;
   font-display: swap;
 }
 
+/* 펴진고딕 Regular */
 @font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2")
+  font-family: "PyeojinGothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Regular.woff2")
     format("woff2");
   font-weight: 400;
   font-display: swap;
 }
 
+/* 펴진고딕 Bold */
 @font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2")
-    format("woff2");
-  font-weight: 500;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2")
-    format("woff2");
-  font-weight: 600;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2")
+  font-family: "PyeojinGothic";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Bold.woff2")
     format("woff2");
   font-weight: 700;
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-8ExtraBold.woff2")
-    format("woff2");
-  font-weight: 800;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Paperozi";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-9Black.woff2")
-    format("woff2");
-  font-weight: 900;
-  font-display: swap;
-}
-
 /* ================================
-   Global Variables
-   - 색상, 텍스트, 레이아웃 공통 기준
-   - Header / Nav / Footer / Page에서 재사용
+   Portfolio Color Palette
+   - 앨범커버 기반 컬러
 ================================ */
 
 :root {
-  /* Brand Color */
-  --color-main: #00a97b;
-  --color-main-dark: #00966e;
-  --color-mint: #5ec8a7;
-  --color-dark: #122d2e;
-  --color-white: #ffffff;
+  --portfolio-navy-black: #1d2126;
+  --portfolio-deep-navy: #25407a;
+  --portfolio-blue: #2558a1;
+  --portfolio-lavender: #7482bd;
+  --portfolio-lavender-soft: #818bb7;
+  --portfolio-rose-beige: #cab2a8;
+  --portfolio-white-soft: #e5e0df;
 
-  /* Brand Gradient */
-  --color-brand-gradient: linear-gradient(
-    180deg,
-    var(--color-main) 0%,
-    var(--color-mint) 100%
-  );
-
-  /* Background Color */
-  --color-bg-light: #ecfdf6;
-  --color-bg-soft: #d9eddf;
-
-  /* Hover / Active Color */
-  --color-main-soft: rgba(236, 253, 246, 0.72);
-  --color-main-hover: rgba(236, 253, 246, 0.18);
-
-  /* Dark Area Color */
-  --color-dark-line: rgba(236, 253, 246, 0.25);
-  --color-dark-soft: rgba(236, 253, 246, 0.12);
-
-  /* Text Color */
-  --text-main: #222222;
-  --text-sub: #555555;
-  --text-desc: #888888;
-  --text-soft: #aaaaaa;
-  --text-disabled: #cccccc;
-
-  /* Layout */
-  --layout-width: 1920px;
-  --layout-max-width: 1920px;
-  --layout-padding-x: clamp(20px, 3vw, 56px);
-
-  /* Common Size */
-  --header-height: 50px;
+  --portfolio-text-main: #f7f4f2;
+  --portfolio-text-sub: rgba(247, 244, 242, 0.72);
+  --portfolio-text-muted: rgba(247, 244, 242, 0.48);
 }
 
 /* ================================
    Reset / Base
 ================================ */
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -137,25 +73,41 @@ html,
 body,
 #root {
   width: 100%;
+  min-width: 0;
   min-height: 100%;
   margin: 0;
+  padding: 0;
 }
 
 html {
+  font-size: 16px;
+  scroll-behavior: smooth;
   overflow-y: scroll;
   scrollbar-gutter: stable;
 }
 
-html,
 body {
-  overflow-x: clip;
+  width: 100%;
+  min-height: 100vh;
+
+  font-family:
+    "PyeojinGothic", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
+    sans-serif;
+
+  font-weight: 400;
+  line-height: 1.5;
+  color: #111111;
+  background-color: var(--portfolio-navy-black);
+
+  overflow-x: hidden;
+  word-break: keep-all;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
-body {
-  font-family: "Paperozi", "Noto Sans KR", sans-serif;
-  color: var(--text-main);
-  background-color: var(--color-white);
-}
+/* ================================
+   Common Element Reset
+================================ */
 
 a {
   color: inherit;
@@ -166,9 +118,104 @@ button,
 input,
 textarea,
 select {
-  font-family: inherit;
+  font: inherit;
+  color: inherit;
 }
 
 button {
+  border: none;
+  background: none;
   cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  outline: none;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+figure,
+blockquote {
+  margin: 0;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* ================================
+   Layout Base
+   - 기본 작업 기준: 1920 x 1080
+   - 실제 화면에서는 100% 유동 대응
+================================ */
+
+#root {
+  min-height: 100vh;
+}
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.page {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.section {
+  width: 100%;
+}
+
+.inner {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+/* ================================
+   Utility Font Classes
+================================ */
+
+.font-myungjo {
+  font-family: "ChosunIlboMyungjo", "Noto Serif KR", serif;
+}
+
+.font-gothic {
+  font-family:
+    "PyeojinGothic", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
+    sans-serif;
+}
+
+/* ================================
+   Selection
+================================ */
+
+::selection {
+  color: var(--portfolio-navy-black);
+  background-color: var(--portfolio-rose-beige);
 }
