@@ -2,6 +2,7 @@ import styled from "styled-components";
 import jsIcon from "../../../assets/images/stacklogo/JS.png";
 import html5Icon from "../../../assets/images/stacklogo/HTML5.png";
 import CSS35Icon from "../../../assets/images/stacklogo/CSS3.png";
+import ReactIcon from "../../../assets/images/stacklogo/React.png";
 
 import PremiereProIcon from "../../../assets/images/stacklogo/PremierePro.png";
 import AfterEffectIcon from "../../../assets/images/stacklogo/AfterEffect.png";
@@ -14,7 +15,7 @@ const stackGroups = [
       { name: "JavaScript", icon: jsIcon },
       { name: "HTML5", icon: html5Icon },
       { name: "CSS3", icon: CSS35Icon },
-      { name: "React" },
+      { name: "React", icon: ReactIcon },
       { name: "jQuery" },
       { name: "Ajax" },
       { name: "Axios" },
