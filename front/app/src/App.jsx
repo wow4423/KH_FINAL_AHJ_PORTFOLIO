@@ -6,7 +6,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<DefaultLayout />}>
-        <Route index element={<Navigate to="/home?section=intro" replace />} />
+        <Route index element={<Navigate to="home?section=intro" replace />} />
         <Route path="home" element={<HomePage />} />
       </Route>
     </Routes>
