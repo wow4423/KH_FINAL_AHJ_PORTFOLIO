@@ -7,7 +7,6 @@ export default function App() {
     <Routes>
       <Route path="/" element={<DefaultLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="home" element={<HomePage />} />
         <Route path="*" element={<HomePage />} />
       </Route>
     </Routes>

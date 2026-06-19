@@ -18,7 +18,10 @@ export default function Header({ activeSection = "intro" }) {
   const currentSection = searchParams.get("section") || activeSection;
 
   function handleMoveSection(section) {
-    navigate(`/home?section=${section}`);
+    navigate({
+      pathname: "/",
+      search: `?section=${section}`,
+    });
 
     setTimeout(() => {
       const target = document.getElementById(section);
@@ -35,7 +38,13 @@ export default function Header({ activeSection = "intro" }) {
   return (
     <header className="portfolio-header">
       <div className="portfolio-header-inner">
-        <Link to="/home?section=intro" className="portfolio-logo">
+        <Link
+          to={{
+            pathname: "/",
+            search: "?section=intro",
+          }}
+          className="portfolio-logo"
+        >
           <img src={logoImg} alt="AHN HAN JUN 로고" />
         </Link>
 
