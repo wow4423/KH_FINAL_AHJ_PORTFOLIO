@@ -26,7 +26,7 @@ export default function HomePage() {
           <h1 className="intro-title">
             안녕하세요.
             <br />
-            흐름을 설계하는 개발자
+            넘어보는 개발자
             <br />
             한준 입니다.
           </h1>
