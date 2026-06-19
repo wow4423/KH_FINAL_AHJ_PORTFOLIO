@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import styled from "styled-components";
 
+import ProjectPreview from "./ProjectPreview";
+import ProjectDetailInfo from "./ProjectDetailInfo";
+
 export default function ProjectModal({ project, onClose }) {
   useEffect(() => {
     if (!project) return;
@@ -55,7 +58,7 @@ export default function ProjectModal({ project, onClose }) {
             </ProjectMeta>
 
             <LinkList>
-              {project.links.map((link) => (
+              {project.links?.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
@@ -74,34 +77,9 @@ export default function ProjectModal({ project, onClose }) {
           <Paragraph>{project.detail.overview}</Paragraph>
         </Section>
 
-        <Grid>
-          <Section>
-            <SectionTitle>담당 역할</SectionTitle>
-            <List>
-              {project.detail.roles.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </List>
-          </Section>
+        <ProjectPreview project={project} />
 
-          <Section>
-            <SectionTitle>주요 기능</SectionTitle>
-            <List>
-              {project.detail.features.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </List>
-          </Section>
-        </Grid>
-
-        <Section>
-          <SectionTitle>트러블슈팅 / 개선 경험</SectionTitle>
-          <List>
-            {project.detail.troubles.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </List>
-        </Section>
+        <ProjectDetailInfo project={project} />
       </Content>
     </Overlay>
   );
@@ -157,7 +135,7 @@ const CloseButton = styled.button`
   position: absolute;
   top: 22px;
   right: 22px;
-  z-index: 2;
+  z-index: 5;
 
   width: 38px;
   height: 38px;
@@ -353,6 +331,7 @@ const LinkList = styled.div`
     font-size: 13px;
     font-weight: 700;
     letter-spacing: -0.02em;
+    text-decoration: none;
 
     transition:
       background-color 0.18s ease,
@@ -386,47 +365,4 @@ const Paragraph = styled.p`
   font-weight: 300;
   line-height: 1.9;
   letter-spacing: -0.035em;
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 34px;
-
-  @media (max-width: 860px) {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-`;
-
-const List = styled.ul`
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  display: grid;
-  gap: 10px;
-
-  li {
-    position: relative;
-    padding-left: 18px;
-
-    color: var(--portfolio-text-sub);
-    font-size: 14px;
-    font-weight: 300;
-    line-height: 1.75;
-    letter-spacing: -0.035em;
-  }
-
-  li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.72em;
-
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background-color: var(--portfolio-rose-beige);
-  }
 `;
