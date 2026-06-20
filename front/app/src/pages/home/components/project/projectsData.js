@@ -1,6 +1,7 @@
 import finalThumb from "../../../../assets/images/펫앤아이포스토어캡쳐.png";
 import finalPreview01 from "../../../../assets/images/finalPrj/storePreview1.png";
 import finalPreview02 from "../../../../assets/images/finalPrj/storePreview2.png";
+import finalPreview03 from "../../../../assets/images/finalPrj/storePreview3.png";
 import finalPreview04 from "../../../../assets/images/finalPrj/storePreview4.png";
 import finalPreview05 from "../../../../assets/images/finalPrj/storePreview5.png";
 
@@ -14,7 +15,15 @@ export const projects = [
     role: "DB 관리자 · 인적관리 도메인 풀스택 담당",
     thumbnail: null,
     colorText: "ERP",
-    stack: ["Java", "JSP & Servlet", "MyBatis", "Oracle", "HTML", "CSS", "JavaScript"],
+    stack: [
+      "Java",
+      "JSP & Servlet",
+      "MyBatis",
+      "Oracle",
+      "HTML",
+      "CSS",
+      "JavaScript",
+    ],
     links: [
       { label: "Service", href: "#" },
       { label: "GitHub", href: "#" },
@@ -88,8 +97,7 @@ export const projects = [
             "근태와 급여를 연결하는 기준이 불명확해 어느 쪽에서 계산을 주도해야 하는지, 어떤 컬럼을 외래키로 참조해야 하는지 모호한 상태였습니다. 도메인 경계가 뒤섞이면서 조회 쿼리도 복잡해졌습니다.",
           solution:
             "연결 기준을 명확히 정의하고 각 도메인이 독립적인 경계를 갖도록 DB 테이블 관계를 재설계했습니다. 이후 JOIN 범위가 줄고 쿼리가 단순해졌습니다.",
-          codeSnippet:
-`-- 재설계 후: Attendance는 근태만, Salary는 급여만 책임진다
+          codeSnippet: `-- 재설계 후: Attendance는 근태만, Salary는 급여만 책임진다
 -- Salary가 Attendance를 참조할 때는 emp_no + year + month로만
 SELECT a.work_days, a.late_count, a.absent_count
   FROM ATTENDANCE a
@@ -105,8 +113,7 @@ SELECT a.work_days, a.late_count, a.absent_count
             "급여 계산 로직이 JSP 화면 안에 직접 작성되어 있어 같은 로직이 여러 페이지에 중복됐고, 수정 시 누락이 생길 수밖에 없는 구조였습니다.",
           solution:
             "계산 로직을 Servlet 레이어로 분리해 화면은 결과만 받아 렌더링하도록 책임을 나눴습니다. 이후 로직 수정 시 화면을 건드리지 않아도 됐습니다.",
-          codeSnippet:
-`// SalaryService.java — 급여 계산 책임을 Servlet으로 분리
+          codeSnippet: `// SalaryService.java — 급여 계산 책임을 Servlet으로 분리
 public SalaryVO calculateMonthlySalary(String empNo, int year, int month) {
     AttendanceVO att = attDAO.getMonthly(empNo, year, month);
     int basePay   = empDAO.getBasePay(empNo);
@@ -154,9 +161,19 @@ public SalaryVO calculateMonthlySalary(String empNo, int year, int month) {
     thumbnail: finalThumb,
     colorText: "PET",
     stack: [
-      "React", "JavaScript", "styled-components", "Axios",
-      "Spring Boot", "Spring Security", "Spring Data JPA", "JWT",
-      "PostgreSQL", "AWS EC2", "AWS RDS", "AWS S3", "KakaoPay",
+      "React",
+      "JavaScript",
+      "styled-components",
+      "Axios",
+      "Spring Boot",
+      "Spring Security",
+      "Spring Data JPA",
+      "JWT",
+      "PostgreSQL",
+      "AWS EC2",
+      "AWS RDS",
+      "AWS S3",
+      "KakaoPay",
     ],
     links: [
       { label: "Service", href: "https://www.petandifor.store/home" },
@@ -245,8 +262,8 @@ public SalaryVO calculateMonthlySalary(String empNo, int year, int month) {
             "S3 이미지 업로드 연동 등록 폼",
             "카테고리·상태별 목록 필터링",
           ],
-          image: null,
-          imageLabel: null,
+          image: finalPreview03,
+          imageLabel: "상품관리",
           flip: true,
         },
         {
@@ -273,8 +290,7 @@ public SalaryVO calculateMonthlySalary(String empNo, int year, int month) {
             "장바구니 주문과 바로구매가 같은 주문 페이지를 공유해야 했는데, 데이터 소스가 완전히 달랐습니다. 장바구니는 API로 가져오는 실제 데이터, 바로구매는 상품 상세에서 넘어온 state 값이었습니다. 별도 페이지로 분리하면 UI가 중복되고, 하나로 합치면 조건 분기가 복잡해지는 문제였습니다.",
           solution:
             "location.state.orderType === 'DIRECT'로 분기하고, 바로구매는 useMemo로 cartItemList 형태의 가상 객체를 만들어 장바구니와 동일한 인터페이스로 처리했습니다. 덕분에 금액 계산, 포인트, 배송비 로직을 한 번만 작성하고 두 흐름에서 재사용할 수 있었습니다.",
-          codeSnippet:
-`// OrderPage.jsx — 두 흐름을 하나의 인터페이스로 통일
+          codeSnippet: `// OrderPage.jsx — 두 흐름을 하나의 인터페이스로 통일
 const orderType = location.state?.orderType; // 'DIRECT' | 'CART'
 
 const cartItemList = useMemo(() => {
@@ -295,8 +311,7 @@ const cartItemList = useMemo(() => {
             "카카오페이 결제창에서 승인이 완료된 뒤 주문 생성 로직이 프론트에만 있으면, 사용자가 브라우저를 닫거나 네트워크가 끊겼을 때 결제는 됐는데 주문이 없는 상황이 생길 수 있었습니다.",
           solution:
             "approval_url을 프론트 URL이 아닌 백엔드 URL(/api/store/order/pay/approve)로 설정했습니다. 카카오가 직접 서버에 승인을 호출하고, 서버에서 결제 승인 + 주문 생성을 하나의 @Transactional로 처리합니다. 프론트는 완료 응답을 받은 뒤 결제 완료 페이지로 이동만 담당합니다.",
-          codeSnippet:
-`// KakaoPayService.java — approval_url을 백엔드로 지정
+          codeSnippet: `// KakaoPayService.java — approval_url을 백엔드로 지정
 KakaoPayReadyRequest request = KakaoPayReadyRequest.builder()
     .approval_url(backendBaseUrl + "/api/store/order/pay/approve")
     .fail_url(frontendBaseUrl + "/store/order/pay/fail")
@@ -317,8 +332,7 @@ public OrderResponseDto approveAndCreateOrder(String pgToken, ...) {
             "주문서에서 포인트를 입력한 뒤 카카오페이 결제창으로 이동하면, 돌아왔을 때 SPA 상태가 초기화되어 usedPoint가 0으로 리셋됐습니다. 포인트를 다시 입력해야 하는 UX 문제였습니다.",
           solution:
             "결제 준비 직전에 usedPoint를 sessionStorage에 저장하고, getInitialUsedPoint() 함수에서 location.state → sessionStorage 순으로 폴백하도록 처리했습니다. 리다이렉트 후에도 입력했던 포인트 값이 자동 복원됩니다.",
-          codeSnippet:
-`// 결제 준비 직전 — 포인트 값 백업
+          codeSnippet: `// 결제 준비 직전 — 포인트 값 백업
 const handleKakaoPay = () => {
   sessionStorage.setItem('usedPoint', String(usedPoint));
   initiateKakaoPayReady();
