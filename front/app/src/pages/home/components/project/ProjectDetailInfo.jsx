@@ -1,473 +1,367 @@
+import { useState } from "react";
 import styled from "styled-components";
 
 export default function ProjectDetailInfo({ project }) {
-  const detail = project?.detail;
+  const [openSet, setOpenSet] = useState(new Set([0]));
 
-  if (!detail) {
-    return null;
+  const detail = project?.detail;
+  if (!detail) return null;
+
+  const troubleList = detail.troubles ?? [];
+  const infoList = detail.info ?? [];
+  const stackList = project?.stack ?? [];
+
+  function toggle(idx) {
+    setOpenSet((prev) => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
   }
 
-  const infoList = detail.info ?? [];
-  const serviceFeatureList = detail.serviceFeatures ?? detail.features ?? [];
-  const myFeatureList = detail.myFeatures ?? detail.roles ?? [];
-  const stackList = project?.stack ?? [];
-  const linkList = project?.links ?? [];
-
   return (
-    <BriefSection>
-      <BriefHeader>
-        <HeaderTextGroup>
-          <SectionEyebrow>PROJECT BRIEF</SectionEyebrow>
-          <SectionTitle>{project.title}</SectionTitle>
-          <SectionSubtitle>{project.subtitle}</SectionSubtitle>
-        </HeaderTextGroup>
+    <Wrapper>
 
-        {linkList.length > 0 && (
-          <HeaderLinkGroup>
-            {linkList.map((link) => (
-              <HeaderLink
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {link.label}
-              </HeaderLink>
-            ))}
-          </HeaderLinkGroup>
-        )}
-      </BriefHeader>
+      {/* ── TECH CHALLENGES ── */}
+      {troubleList.length > 0 && (
+        <Block>
+          <SectionHead>
+            <Eyebrow>TECH CHALLENGES</Eyebrow>
+            <EyebrowSub>직접 겪고 해결한 기술적 문제들</EyebrowSub>
+          </SectionHead>
 
-      <SummaryPanel>
-        <SummaryLabel>SUMMARY</SummaryLabel>
-        <SummaryText>{project.summary}</SummaryText>
-      </SummaryPanel>
+          <ChallengeList>
+            {troubleList.map((trouble, idx) => {
+              const isOpen = openSet.has(idx);
+              const isString = typeof trouble === "string";
 
-      {infoList.length > 0 && (
-        <InfoGrid>
-          {infoList.map((info) => (
-            <InfoCard key={info.label}>
-              <InfoLabel>{info.label}</InfoLabel>
-              <InfoValue>{info.value}</InfoValue>
-            </InfoCard>
-          ))}
-        </InfoGrid>
+              return (
+                <ChallengeItem key={idx}>
+                  <ChallengeToggle
+                    type="button"
+                    onClick={() => toggle(idx)}
+                    $open={isOpen}
+                    aria-expanded={isOpen}
+                  >
+                    <ChallengeLeft>
+                      <ChallengeNum $open={isOpen}>
+                        {String(idx + 1).padStart(2, "0")}
+                      </ChallengeNum>
+                      <ChallengeTitle $open={isOpen}>
+                        {isString ? trouble : trouble.title}
+                      </ChallengeTitle>
+                    </ChallengeLeft>
+                    <ExpandMark $open={isOpen}>
+                      {isOpen ? "−" : "+"}
+                    </ExpandMark>
+                  </ChallengeToggle>
+
+                  {isOpen && !isString && (
+                    <ChallengeBody>
+                      <SituationText>{trouble.problem}</SituationText>
+
+                      <SolutionDivider>
+                        <DividerLine />
+                        <DividerLabel>해결</DividerLabel>
+                        <DividerLine />
+                      </SolutionDivider>
+
+                      <SolutionText>{trouble.solution}</SolutionText>
+                    </ChallengeBody>
+                  )}
+                </ChallengeItem>
+              );
+            })}
+          </ChallengeList>
+        </Block>
       )}
 
-      {stackList.length > 0 && (
-        <StackPanel>
-          <PanelTitle>사용 기술 스택</PanelTitle>
+      {/* ── PROJECT META ── */}
+      {(infoList.length > 0 || stackList.length > 0) && (
+        <MetaBlock>
+          {infoList.length > 0 && (
+            <MetaGrid>
+              {infoList.map((info) => (
+                <MetaItem key={info.label}>
+                  <MetaLabel>{info.label}</MetaLabel>
+                  <MetaValue>{info.value}</MetaValue>
+                </MetaItem>
+              ))}
+            </MetaGrid>
+          )}
 
-          <StackList>
-            {stackList.map((stack) => (
-              <span key={stack}>{stack}</span>
-            ))}
-          </StackList>
-        </StackPanel>
+          {stackList.length > 0 && (
+            <StackRow>
+              <StackLabel>Stack</StackLabel>
+              <StackTags>
+                {stackList.map((s) => (
+                  <StackTag key={s}>{s}</StackTag>
+                ))}
+              </StackTags>
+            </StackRow>
+          )}
+        </MetaBlock>
       )}
 
-      <FeatureGrid>
-        {serviceFeatureList.length > 0 && (
-          <FeatureCard>
-            <FeatureHeader>
-              <FeatureNumber>01</FeatureNumber>
-              <FeatureTitle>서비스 전체 기능</FeatureTitle>
-            </FeatureHeader>
-
-            <FeatureList>
-              {serviceFeatureList.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </FeatureList>
-          </FeatureCard>
-        )}
-
-        {myFeatureList.length > 0 && (
-          <FeatureCard $emphasis>
-            <FeatureHeader>
-              <FeatureNumber>02</FeatureNumber>
-              <FeatureTitle>내가 맡은 기능</FeatureTitle>
-            </FeatureHeader>
-
-            <FeatureList>
-              {myFeatureList.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </FeatureList>
-          </FeatureCard>
-        )}
-      </FeatureGrid>
-    </BriefSection>
+    </Wrapper>
   );
 }
 
-const BriefSection = styled.section`
-  position: relative;
-  margin-top: 46px;
-  padding: clamp(24px, 3vw, 34px);
+/* ─────────────────────────────────────────────────────
+   Layout
+───────────────────────────────────────────────────── */
 
-  overflow: hidden;
-  border-radius: 30px;
-  border: 1px solid rgba(229, 224, 223, 0.1);
-
-  background:
-    radial-gradient(
-      circle at 8% 0%,
-      rgba(202, 178, 168, 0.14),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at 92% 100%,
-      rgba(116, 130, 189, 0.16),
-      transparent 34%
-    ),
-    linear-gradient(
-      135deg,
-      rgba(229, 224, 223, 0.045),
-      rgba(229, 224, 223, 0.018)
-    );
-
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.025),
-    0 34px 90px rgba(0, 0, 0, 0.22);
-
-  &::before {
-    content: "BRIEF";
-    position: absolute;
-    right: clamp(18px, 3vw, 34px);
-    top: 18px;
-
-    color: rgba(229, 224, 223, 0.035);
-    font-size: clamp(58px, 8vw, 116px);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.08em;
-    pointer-events: none;
-  }
+const Wrapper = styled.div`
+  display: grid;
+  gap: 56px;
+  margin-top: 56px;
 `;
 
-const BriefHeader = styled.div`
-  position: relative;
-  z-index: 1;
+const Block = styled.section``;
 
+const SectionHead = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
-
-  @media (max-width: 720px) {
-    flex-direction: column;
-  }
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 28px;
 `;
 
-const HeaderTextGroup = styled.div`
-  min-width: 0;
-`;
-
-const SectionEyebrow = styled.p`
-  margin: 0 0 10px;
-
-  color: var(--portfolio-rose-beige);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-`;
-
-const SectionTitle = styled.h4`
+const Eyebrow = styled.p`
   margin: 0;
-
-  color: var(--portfolio-white-soft);
-  font-size: clamp(30px, 3vw, 48px);
-  font-weight: 800;
-  line-height: 1.12;
-  letter-spacing: -0.065em;
-`;
-
-const SectionSubtitle = styled.p`
-  margin: 12px 0 0;
-
-  color: var(--portfolio-text-sub);
-  font-size: clamp(15px, 1vw, 18px);
-  font-weight: 300;
-  line-height: 1.65;
-  letter-spacing: -0.035em;
-`;
-
-const HeaderLinkGroup = styled.div`
-  flex-shrink: 0;
-
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-
-  @media (max-width: 720px) {
-    justify-content: flex-start;
-  }
-`;
-
-const HeaderLink = styled.a`
-  height: 36px;
-  padding: 0 15px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 999px;
-  border: 1px solid rgba(202, 178, 168, 0.24);
-  background-color: rgba(202, 178, 168, 0.075);
-
-  color: var(--portfolio-rose-beige);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  text-decoration: none;
-
-  transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease;
-
-  &:hover {
-    color: var(--portfolio-white-soft);
-    border-color: rgba(202, 178, 168, 0.5);
-    background-color: rgba(202, 178, 168, 0.14);
-    transform: translateY(-2px);
-  }
-`;
-
-const SummaryPanel = styled.div`
-  position: relative;
-  z-index: 1;
-
-  margin-top: 28px;
-  padding: 20px 22px;
-
-  border-radius: 22px;
-  border: 1px solid rgba(229, 224, 223, 0.1);
-  background: linear-gradient(
-    135deg,
-    rgba(9, 10, 16, 0.34),
-    rgba(9, 10, 16, 0.12)
-  );
-
-  display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 18px;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-`;
-
-const SummaryLabel = styled.span`
-  color: var(--portfolio-rose-beige);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-`;
-
-const SummaryText = styled.p`
-  margin: 0;
-
-  color: var(--portfolio-text-sub);
-  font-size: 14px;
-  font-weight: 300;
-  line-height: 1.85;
-  letter-spacing: -0.035em;
-`;
-
-const InfoGrid = styled.div`
-  position: relative;
-  z-index: 1;
-
-  margin-top: 18px;
-
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-
-  @media (max-width: 920px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const InfoCard = styled.div`
-  min-height: 92px;
-  padding: 18px;
-
-  border-radius: 20px;
-  border: 1px solid rgba(229, 224, 223, 0.1);
-  background: linear-gradient(
-    145deg,
-    rgba(229, 224, 223, 0.06),
-    rgba(229, 224, 223, 0.022)
-  );
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-`;
-
-const InfoLabel = styled.span`
-  color: var(--portfolio-text-muted);
-  font-size: 12px;
-  font-weight: 300;
-  letter-spacing: -0.025em;
-`;
-
-const InfoValue = styled.strong`
-  margin-top: 14px;
-
-  color: var(--portfolio-white-soft);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.45;
-  letter-spacing: -0.04em;
-`;
-
-const StackPanel = styled.div`
-  position: relative;
-  z-index: 1;
-
-  margin-top: 24px;
-`;
-
-const PanelTitle = styled.h5`
-  margin: 0 0 14px;
-
-  color: var(--portfolio-rose-beige);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-`;
-
-const StackList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-
-  span {
-    min-height: 30px;
-    padding: 0 12px;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 999px;
-    background-color: rgba(116, 130, 189, 0.14);
-    border: 1px solid rgba(116, 130, 189, 0.2);
-
-    color: var(--portfolio-text-sub);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: -0.025em;
-  }
-`;
-
-const FeatureGrid = styled.div`
-  position: relative;
-  z-index: 1;
-
-  margin-top: 24px;
-
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: 16px;
-
-  @media (max-width: 860px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const FeatureCard = styled.div`
-  padding: 22px;
-
-  border-radius: 24px;
-  border: 1px solid
-    ${({ $emphasis }) =>
-      $emphasis ? "rgba(202, 178, 168, 0.22)" : "rgba(229, 224, 223, 0.1)"};
-
-  background: ${({ $emphasis }) =>
-    $emphasis
-      ? `linear-gradient(
-          135deg,
-          rgba(202, 178, 168, 0.095),
-          rgba(229, 224, 223, 0.025)
-        )`
-      : `rgba(229, 224, 223, 0.035)`};
-`;
-
-const FeatureHeader = styled.div`
-  margin-bottom: 16px;
-
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const FeatureNumber = styled.span`
-  width: 32px;
-  height: 32px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 50%;
-  background-color: rgba(202, 178, 168, 0.12);
-  border: 1px solid rgba(202, 178, 168, 0.18);
-
   color: var(--portfolio-rose-beige);
   font-size: 11px;
   font-weight: 800;
-`;
+  letter-spacing: 0.22em;
 
-const FeatureTitle = styled.h5`
-  margin: 0;
-
-  color: var(--portfolio-white-soft);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.035em;
-`;
-
-const FeatureList = styled.ul`
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  display: grid;
-  gap: 10px;
-
-  li {
-    position: relative;
-    padding-left: 16px;
-
-    color: var(--portfolio-text-sub);
-    font-size: 14px;
-    font-weight: 300;
-    line-height: 1.7;
-    letter-spacing: -0.035em;
-  }
-
-  li::before {
+  &::before {
     content: "";
-    position: absolute;
-    left: 0;
-    top: 0.72em;
-
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background-color: rgba(202, 178, 168, 0.75);
+    display: inline-block;
+    width: 16px;
+    height: 1px;
+    margin-right: 10px;
+    vertical-align: middle;
+    background: var(--portfolio-rose-beige);
+    opacity: 0.5;
   }
+`;
+
+const EyebrowSub = styled.span`
+  color: var(--portfolio-text-muted);
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+`;
+
+/* ─────────────────────────────────────────────────────
+   Tech Challenges
+───────────────────────────────────────────────────── */
+
+const ChallengeList = styled.div`
+  border-top: 1px solid rgba(229, 224, 223, 0.07);
+`;
+
+const ChallengeItem = styled.div`
+  border-bottom: 1px solid rgba(229, 224, 223, 0.07);
+`;
+
+const ChallengeToggle = styled.button`
+  width: 100%;
+  padding: 22px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: left;
+  background: transparent;
+  border-left: 2px solid
+    ${({ $open }) =>
+      $open ? "var(--portfolio-lavender)" : "transparent"};
+  transition:
+    border-color 0.22s ease,
+    background 0.18s ease;
+
+  &:hover {
+    background: rgba(229, 224, 223, 0.03);
+  }
+`;
+
+const ChallengeLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+`;
+
+const ChallengeNum = styled.span`
+  flex-shrink: 0;
+  color: ${({ $open }) =>
+    $open ? "var(--portfolio-lavender)" : "var(--portfolio-rose-beige)"};
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  opacity: ${({ $open }) => ($open ? 1 : 0.55)};
+  transition: color 0.22s ease, opacity 0.22s ease;
+`;
+
+const ChallengeTitle = styled.span`
+  color: ${({ $open }) =>
+    $open
+      ? "var(--portfolio-white-soft)"
+      : "rgba(229, 224, 223, 0.75)"};
+  font-size: clamp(14px, 1.1vw, 17px);
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -0.04em;
+  transition: color 0.22s ease;
+`;
+
+const ExpandMark = styled.span`
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid
+    ${({ $open }) =>
+      $open
+        ? "rgba(116, 130, 189, 0.38)"
+        : "rgba(229, 224, 223, 0.12)"};
+  background: ${({ $open }) =>
+    $open
+      ? "rgba(116, 130, 189, 0.1)"
+      : "rgba(229, 224, 223, 0.05)"};
+  color: ${({ $open }) =>
+    $open ? "var(--portfolio-lavender)" : "var(--portfolio-white-soft)"};
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1;
+  transition: all 0.22s ease;
+`;
+
+const ChallengeBody = styled.div`
+  padding: 6px 16px 28px 52px;
+
+  @media (max-width: 560px) {
+    padding-left: 16px;
+  }
+`;
+
+const SituationText = styled.p`
+  margin: 0;
+  color: rgba(247, 244, 242, 0.58);
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.95;
+  letter-spacing: -0.03em;
+`;
+
+const SolutionDivider = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+`;
+
+const DividerLine = styled.div`
+  flex: 1;
+  height: 1px;
+  background: rgba(116, 130, 189, 0.18);
+`;
+
+const DividerLabel = styled.span`
+  flex-shrink: 0;
+  color: var(--portfolio-lavender);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+`;
+
+const SolutionText = styled.p`
+  margin: 0;
+  color: var(--portfolio-text-sub);
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.95;
+  letter-spacing: -0.03em;
+`;
+
+/* ─────────────────────────────────────────────────────
+   Project Meta
+───────────────────────────────────────────────────── */
+
+const MetaBlock = styled.div`
+  padding: 24px 26px;
+  border-radius: 18px;
+  border: 1px solid rgba(229, 224, 223, 0.08);
+  background: rgba(229, 224, 223, 0.03);
+  display: grid;
+  gap: 18px;
+`;
+
+const MetaGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 14px 24px;
+`;
+
+const MetaItem = styled.div`
+  display: grid;
+  gap: 4px;
+`;
+
+const MetaLabel = styled.span`
+  color: var(--portfolio-text-muted);
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+`;
+
+const MetaValue = styled.strong`
+  color: var(--portfolio-white-soft);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.5;
+`;
+
+const StackRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+  border-top: 1px solid rgba(229, 224, 223, 0.07);
+`;
+
+const StackLabel = styled.span`
+  flex-shrink: 0;
+  padding-top: 3px;
+  color: var(--portfolio-text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+`;
+
+const StackTags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+`;
+
+const StackTag = styled.span`
+  height: 24px;
+  padding: 0 9px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+  background: rgba(116, 130, 189, 0.1);
+  border: 1px solid rgba(116, 130, 189, 0.17);
+  color: var(--portfolio-lavender-soft);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 `;
