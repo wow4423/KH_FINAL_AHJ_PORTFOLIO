@@ -32,12 +32,13 @@ export default function ProjectsSection() {
         <ProjectGrid>
           {[...projects]
             .sort((a, b) => Number(b.id === "final") - Number(a.id === "final"))
-            .map((project) => (
+            .map((project, i) => (
             <ProjectCard
               key={project.id}
               project={project}
               onClick={openModal}
               featured={project.id === "final"}
+              index={i}
             />
           ))}
         </ProjectGrid>
@@ -111,9 +112,9 @@ const SectionLabel = styled.p`
   margin: 0 0 24px;
 
   color: var(--portfolio-rose-beige);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
 `;
 
 const Title = styled.h2`

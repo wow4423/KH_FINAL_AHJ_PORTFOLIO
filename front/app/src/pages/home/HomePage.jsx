@@ -3,6 +3,8 @@ import AboutSection from "./components/AboutSection";
 import nightVideo from "../../assets/images/달밤영상.mp4";
 import StacksSection from "./components/StacksSection";
 import ProjectsSection from "./components/ProjectsSection";
+import ContactSection from "./components/ContactSection";
+import GuestbookSection from "./components/GuestbookSection";
 
 export default function HomePage() {
   return (
@@ -21,28 +23,28 @@ export default function HomePage() {
         <div className="intro-bg-overlay" />
 
         <div className="portfolio-section-inner intro-content">
-          <p className="intro-eyebrow">FULLSTACK WEB DEVELOPER PORTFOLIO</p>
+          <p className="intro-eyebrow">AHN HAN JUN · FULLSTACK WEB DEVELOPER</p>
 
           <h1 className="intro-title">
-            보이지 않던 흐름을
+            알리던 사람이
             <br />
-            끝까지 따라가
+            만드는 사람이
             <br />
-            분명하게 만듭니다.
+            됐습니다.
           </h1>
 
           <p className="intro-desc">
-            사용자가 자연스럽게 움직이는 화면과
+            B2B 기업에서 홍보기획을 하며 플랫폼 서비스를 기획하고 알렸습니다.
             <br />
-            시간이 지나도 믿을 수 있는 데이터를 설계하는 개발자 안한준입니다.
+            데이터와 기능이 하나로 연결되는 구조에 매료됐고,
+            <br />
+            그 흐름을 직접 설계하고 싶어 개발을 시작했습니다.
           </p>
 
-          <div className="intro-signature">
-            <span>UI FLOW</span>
-            <i />
-            <span>DATA FLOW</span>
-            <i />
-            <span>SERVICE LOGIC</span>
+          <div className="intro-career">
+            <span className="career-tag">홍보기획</span>
+            <span className="career-arrow">→</span>
+            <span className="career-now">Fullstack Developer</span>
           </div>
         </div>
       </section>
@@ -52,6 +54,10 @@ export default function HomePage() {
       <StacksSection />
 
       <ProjectsSection />
+
+      <ContactSection />
+
+      <GuestbookSection />
     </div>
   );
 }

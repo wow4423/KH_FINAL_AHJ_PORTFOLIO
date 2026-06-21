@@ -1,5 +1,5 @@
 /* ================================
-   Portfolio Header
+   Portfolio Header — always transparent
 ================================ */
 
 .portfolio-header {
@@ -11,9 +11,13 @@
   left: 0;
   z-index: 1000;
 
-  background: rgba(11, 17, 29, 0.78);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(18px);
+  /* 언제나 투명 — 상단 페이드아웃 그라디언트만 */
+  background: linear-gradient(
+    180deg,
+    rgba(4, 8, 18, 0.52) 0%,
+    rgba(4, 8, 18, 0.18) 60%,
+    transparent 100%
+  );
   color: #ffffff;
 }
 
@@ -28,7 +32,7 @@
   align-items: center;
 }
 
-/* Logo */
+/* ── Logo ── */
 .portfolio-logo {
   position: relative;
   z-index: 2;
@@ -42,9 +46,7 @@
 
   text-decoration: none;
 
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .portfolio-logo img {
@@ -55,11 +57,11 @@
 }
 
 .portfolio-logo:hover {
-  opacity: 0.82;
+  opacity: 0.78;
   transform: translateY(-1px);
 }
 
-/* Center Navigation */
+/* ── Nav pill container ── */
 .portfolio-nav {
   position: absolute;
   left: 50%;
@@ -68,53 +70,90 @@
 
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: clamp(10px, 1.1vw, 22px);
+  gap: 2px;
 
   transform: translate(-50%, -50%);
+
+  /* frosted glass pill */
+  padding: 4px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
 }
 
+/* ── Nav buttons ── */
 .portfolio-nav-button {
-  height: 38px;
-  padding: 0 14px;
+  position: relative;
+
+  height: 36px;
+  padding: 0 16px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   border: none;
-  border-radius: 12px;
+  border-radius: 999px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.58);
+
+  color: rgba(255, 255, 255, 0.42);
 
   font-family: "PyeojinGothic", "Noto Sans KR", sans-serif;
-
-  font-size: clamp(11px, 0.75vw, 14px);
-  letter-spacing: 0.04em;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
 
   cursor: pointer;
 
+  transition: color 0.22s ease, background 0.22s ease;
+}
+
+/* active dot indicator */
+.portfolio-nav-button::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+
+  width: 18px;
+  height: 2px;
+  border-radius: 1px;
+
+  background: linear-gradient(
+    90deg,
+    rgba(202, 178, 168, 0.3),
+    rgba(202, 178, 168, 1),
+    rgba(202, 178, 168, 0.3)
+  );
+  box-shadow:
+    0 0 8px rgba(202, 178, 168, 0.8),
+    0 0 20px rgba(202, 178, 168, 0.35);
+
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+
   transition:
-    color 0.18s ease,
-    background-color 0.18s ease,
-    transform 0.18s ease;
+    transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.22s ease;
 }
 
 .portfolio-nav-button:hover {
-  color: rgba(255, 255, 255, 0.9);
-  background-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .portfolio-nav-button.active {
   color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.portfolio-nav-button.active:hover {
-  transform: translateY(-1px);
+.portfolio-nav-button.active::after {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 1;
 }
 
 /* ================================
@@ -127,16 +166,16 @@
   }
 
   .portfolio-header-inner {
-    min-height: 72px;
-    padding: 16px 22px 14px;
+    min-height: 64px;
+    padding: 14px 22px 12px;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
   }
 
   .portfolio-logo {
     width: 86px;
-    height: 54px;
+    height: 50px;
   }
 
   .portfolio-logo img {
@@ -145,14 +184,12 @@
 
   .portfolio-nav {
     position: static;
-
-    width: 100%;
-    justify-content: flex-start;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-
+    width: auto;
+    gap: 2px;
     transform: none;
+    overflow-x: auto;
+    padding: 4px 6px;
+    scrollbar-width: none;
   }
 
   .portfolio-nav::-webkit-scrollbar {
@@ -160,10 +197,9 @@
   }
 
   .portfolio-nav-button {
-    height: 40px;
-    padding: 0 14px;
+    height: 34px;
+    padding: 0 13px;
     flex-shrink: 0;
-    border-radius: 9px;
-    font-size: 13px;
+    font-size: 10.5px;
   }
 }

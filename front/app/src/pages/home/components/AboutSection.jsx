@@ -1,86 +1,138 @@
 import styled from "styled-components";
+import { useRef } from "react";
 import moonImg from "../../../assets/images/달사진.jpg";
 
+const career = [
+  {
+    period: "2014.03 – 2021.02",
+    tag: "EDUCATION",
+    title: "서경대학교",
+    sub: "글로벌경영학과",
+  },
+  {
+    period: "2020.12 – 2025.07",
+    tag: "WORK",
+    title: "이트너스",
+    sub: "홍보기획팀 · B2B 서비스 기획·홍보",
+  },
+  {
+    period: "2025.11 – 2026.06",
+    tag: "EDUCATION",
+    title: "KH정보교육원",
+    sub: "AWS 클라우드 기반 DevOps 개발자 양성 과정",
+  },
+];
+
+const profileItems = [
+  { label: "Name", value: "안한준 (Ahn Han Jun)" },
+  { label: "Role", value: "Fullstack Web Developer" },
+  { label: "Background", value: "홍보기획 → 풀스택 개발 전향" },
+  { label: "Email", value: "wow4423@gmail.com" },
+];
+
 export default function AboutSection() {
+  const trackRef = useRef(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollStart = useRef(0);
+
+  function onMouseDown(e) {
+    isDragging.current = true;
+    startX.current = e.pageX;
+    scrollStart.current = trackRef.current.scrollLeft;
+    trackRef.current.style.cursor = "grabbing";
+  }
+
+  function onMouseMove(e) {
+    if (!isDragging.current) return;
+    e.preventDefault();
+    trackRef.current.scrollLeft =
+      scrollStart.current - (e.pageX - startX.current);
+  }
+
+  function stopDrag() {
+    isDragging.current = false;
+    if (trackRef.current) trackRef.current.style.cursor = "grab";
+  }
+
   return (
-    <Wrapper id="about" className="portfolio-section">
+    <Wrapper id="about">
       <Inner>
-        <SectionMeta>
-          <span>ABOUT ME</span>
-        </SectionMeta>
+        <SectionLabel>ABOUT ME</SectionLabel>
 
         <ContentGrid>
           <TextColumn>
             <IntroTitle>
-              화면 뒤에 숨어 있는 흐름까지 살피는
+              서비스를 전달하다
+              <br />
+              직접 만드는 사람이 된
               <br />
               개발자 <strong>안한준</strong>입니다.
             </IntroTitle>
 
             <MainText>
               <p>
-                홍보 업무에서 정보가 사람에게 어떻게 보이고 전달되는지를
-                고민했습니다. 개발을 시작한 뒤 그 관심은 사용자가 어디에서
-                멈추는지, 데이터가 어디에서 달라지는지를 찾는 일로 이어졌습니다.
+                B2B 기업 홍보기획팀에서 기업 지원 플랫폼을 기획하고 알리는
+                일을 했습니다. 서비스를 전달하는 입장에서 일하다 보니,
+                플랫폼 안에서 기능과 데이터가 연결되어 하나로 움직이는
+                구조가 눈에 들어왔고 그걸 직접 만들고 싶다는 생각이 커졌습니다.
               </p>
-
               <p>
-                파이널 프로젝트에서는 상품부터 결제와 리뷰까지 스토어 전체를
-                맡았습니다. 서로 다른 구매 방식을 하나의 주문 경험으로 합치고,
-                변경되는 상품 정보와 보존되어야 할 주문 기록을 구분했습니다.
+                개발을 배우며 단순히 화면을 완성하는 것보다, 사용자의 흐름에
+                맞게 기능을 연결하고 데이터를 일관되게 유지하는 과정이 가장
+                보람 있었습니다. 서비스 목적과 사용자 관점을 먼저 고민해온
+                경험이 지금 코드를 짤 때 방향을 잡아준다고 믿습니다.
               </p>
             </MainText>
 
-            <StoryGrid>
-              <StoryItem>
-                <strong>불편을 발견합니다.</strong>
-                <p>직접 사용하며 끊기는 순간과 혼란을 주는 데이터를 찾습니다.</p>
-              </StoryItem>
-              <StoryItem>
-                <strong>화면과 데이터를 함께 봅니다.</strong>
-                <p>UI의 편의성과 서버의 상태 변화를 하나의 흐름으로 연결합니다.</p>
-              </StoryItem>
-              <StoryItem>
-                <strong>선택의 이유를 설명합니다.</strong>
-                <p>무엇을 썼는지보다 왜 이 구조를 선택했는지 말할 수 있게 만듭니다.</p>
-              </StoryItem>
-            </StoryGrid>
+            <ProfileStrip>
+              {profileItems.map((item) => (
+                <ProfileItem key={item.label}>
+                  <ProfileItemLabel>{item.label}</ProfileItemLabel>
+                  <ProfileItemValue>{item.value}</ProfileItemValue>
+                </ProfileItem>
+              ))}
+            </ProfileStrip>
           </TextColumn>
 
           <VisualColumn>
             <MoonCard aria-label="달과 밤하늘 이미지" />
-
-            <ProfileCard>
-              <ProfileLabel>PROFILE</ProfileLabel>
-
-              <ProfileList>
-                <li>
-                  <span>Name</span>
-                  <strong>안한준</strong>
-                </li>
-                <li>
-                  <span>Role</span>
-                  <strong>Fullstack Web Developer</strong>
-                </li>
-                <li>
-                  <span>Focus</span>
-                  <strong>UI Flow · Data Flow · Service Logic</strong>
-                </li>
-              </ProfileList>
-            </ProfileCard>
           </VisualColumn>
         </ContentGrid>
 
+        <TimelineSection>
+          <TimelineTopRow>
+            <TimelineHeader>CAREER · EDUCATION</TimelineHeader>
+            <TimelineHint>drag to explore →</TimelineHint>
+          </TimelineTopRow>
+          <TimelineTrack
+            ref={trackRef}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={stopDrag}
+            onMouseLeave={stopDrag}
+          >
+            {career.map((item) => (
+              <TimelineCard key={item.period}>
+                <TimelineTag $type={item.tag}>{item.tag}</TimelineTag>
+                <TimelineCardTitle>{item.title}</TimelineCardTitle>
+                <TimelineCardSub>{item.sub}</TimelineCardSub>
+                <TimelineCardPeriod>{item.period}</TimelineCardPeriod>
+              </TimelineCard>
+            ))}
+            <TimelineEndPad />
+          </TimelineTrack>
+        </TimelineSection>
       </Inner>
     </Wrapper>
   );
 }
 
+/* ── Wrapper ── */
 const Wrapper = styled.section`
   position: relative;
   width: 100%;
-  min-height: 100vh;
-  padding: 130px clamp(28px, 6vw, 110px) 120px;
+  padding: 110px clamp(28px, 6vw, 110px) 90px;
   color: #182033;
   overflow: hidden;
 
@@ -96,35 +148,6 @@ const Wrapper = styled.section`
       transparent 28%
     ),
     linear-gradient(135deg, #f2edeb 0%, #e5e4ee 46%, #d9dfeb 100%);
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 92px;
-    right: -120px;
-    width: clamp(360px, 42vw, 780px);
-    height: clamp(360px, 42vw, 780px);
-    border-radius: 50%;
-    background: rgba(116, 130, 189, 0.12);
-    filter: blur(2px);
-    pointer-events: none;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: clamp(28px, 6vw, 110px);
-    bottom: 80px;
-    width: min(560px, 42vw);
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      rgba(202, 178, 168, 0.5),
-      rgba(116, 130, 189, 0.18),
-      transparent
-    );
-    pointer-events: none;
-  }
 `;
 
 const Inner = styled.div`
@@ -135,57 +158,38 @@ const Inner = styled.div`
   margin: 0 auto;
 `;
 
-const SectionMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 36px;
-
-  span {
-    color: #865f68;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.18em;
-  }
-
-  small {
-    color: rgba(24, 32, 51, 0.55);
-    font-size: 14px;
-    font-weight: 300;
-    letter-spacing: -0.02em;
-  }
-
-  @media (max-width: 720px) {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
+const SectionLabel = styled.p`
+  margin: 0 0 36px;
+  color: #865f68;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
 `;
 
+/* ── Main grid ── */
 const ContentGrid = styled.div`
   display: grid;
-  grid-template-columns: minmax(520px, 1.05fr) minmax(380px, 0.95fr);
-  gap: clamp(48px, 7vw, 120px);
-  align-items: end;
+  grid-template-columns: 1fr minmax(300px, 0.72fr);
+  gap: clamp(40px, 6vw, 100px);
+  align-items: stretch;
 
   @media (max-width: 1100px) {
     grid-template-columns: 1fr;
-    align-items: start;
   }
 `;
 
 const TextColumn = styled.div`
-  position: relative;
-  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 `;
 
 const IntroTitle = styled.h2`
-  margin: 0 0 34px;
-
+  margin: 0;
   color: #172239;
-  font-size: clamp(28px, 2.3vw, 46px);
+  font-size: clamp(28px, 2.5vw, 48px);
   font-weight: 300;
-  line-height: 1.45;
+  line-height: 1.48;
   letter-spacing: -0.055em;
 
   strong {
@@ -195,90 +199,96 @@ const IntroTitle = styled.h2`
 `;
 
 const MainText = styled.div`
-  max-width: 760px;
   display: grid;
-  gap: 22px;
+  gap: 16px;
 
   p {
     margin: 0;
-    color: rgba(24, 32, 51, 0.7);
-    font-size: clamp(15px, 1vw, 18px);
+    color: rgba(24, 32, 51, 0.68);
+    font-size: clamp(14px, 0.95vw, 16px);
     font-weight: 300;
     line-height: 1.95;
-    letter-spacing: -0.035em;
+    letter-spacing: -0.03em;
   }
 `;
 
-const StoryGrid = styled.div`
-  margin-top: 42px;
+/* ── Profile strip (below text, no card) ── */
+const ProfileStrip = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  border-top: 1px solid rgba(24, 32, 51, 0.1);
+  margin-top: 8px;
 
-  @media (max-width: 760px) {
+  @media (max-width: 640px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const StoryItem = styled.article`
-  min-height: 190px;
-  padding: 20px;
+const ProfileItem = styled.div`
+  padding: 14px 0 14px;
+  border-bottom: 1px solid rgba(24, 32, 51, 0.06);
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.48);
-  border: 1px solid rgba(24, 32, 51, 0.08);
+  gap: 4px;
 
-  strong {
-    margin-top: auto;
-    color: #172239;
-    font-size: 16px;
-    line-height: 1.45;
-    letter-spacing: -0.04em;
+  &:nth-child(odd) {
+    padding-right: 24px;
+    border-right: 1px solid rgba(24, 32, 51, 0.06);
   }
 
-  p {
-    margin: 9px 0 0;
-    color: rgba(24, 32, 51, 0.58);
-    font-size: 13px;
-    line-height: 1.65;
+  &:nth-child(even) {
+    padding-left: 24px;
+  }
+
+  @media (max-width: 640px) {
+    &:nth-child(odd) {
+      padding-right: 0;
+      border-right: none;
+    }
+    &:nth-child(even) {
+      padding-left: 0;
+    }
   }
 `;
 
+const ProfileItemLabel = styled.span`
+  color: rgba(24, 32, 51, 0.4);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+`;
+
+const ProfileItemValue = styled.span`
+  color: #172239;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+`;
+
+/* ── Visual (right column) ── */
 const VisualColumn = styled.div`
-  position: relative;
-  min-height: 680px;
-
   @media (max-width: 1100px) {
-    min-height: auto;
-    display: grid;
-    grid-template-columns: minmax(280px, 420px) minmax(280px, 1fr);
-    gap: 24px;
-    align-items: end;
-  }
-
-  @media (max-width: 760px) {
-    grid-template-columns: 1fr;
+    display: none;
   }
 `;
 
 const MoonCard = styled.div`
-  position: absolute;
-  right: 0;
-  bottom: 80px;
-
-  width: min(420px, 32vw);
-  height: 620px;
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
 
   overflow: hidden;
-  border-radius: 220px 220px 24px 24px;
+  border-radius: 200px 200px 24px 24px;
 
   background:
     linear-gradient(
       180deg,
       rgba(13, 17, 28, 0.04) 0%,
-      rgba(13, 17, 28, 0.18) 52%,
-      rgba(13, 17, 28, 0.82) 100%
+      rgba(13, 17, 28, 0.18) 50%,
+      rgba(13, 17, 28, 0.84) 100%
     ),
     url(${moonImg});
   background-size: cover;
@@ -286,105 +296,128 @@ const MoonCard = styled.div`
 
   border: 1px solid rgba(229, 224, 223, 0.1);
   box-shadow:
-    0 42px 100px rgba(0, 0, 0, 0.42),
+    0 32px 72px rgba(0, 0, 0, 0.32),
     inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      rgba(23, 20, 33, 0.26) 0%,
-      transparent 38%,
-      rgba(23, 20, 33, 0.18) 100%
-    );
-  }
 
   &::after {
     content: "moon / growth / depth";
     position: absolute;
-    left: 28px;
-    bottom: 26px;
-
-    color: rgba(229, 224, 223, 0.56);
-    font-size: 12px;
+    left: 24px;
+    bottom: 22px;
+    color: rgba(229, 224, 223, 0.45);
+    font-size: 11px;
     font-weight: 300;
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
-
-  @media (max-width: 1100px) {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    width: 100%;
-    height: 460px;
-  }
-
-  @media (max-width: 760px) {
-    height: 420px;
-    border-radius: 180px 180px 22px 22px;
-  }
 `;
 
-const ProfileCard = styled.div`
-  position: absolute;
-  right: min(300px, 23vw);
-  bottom: 0;
-  z-index: 2;
-
-  width: min(360px, 72vw);
-  padding: 26px 26px 24px;
-
-  border-radius: 22px;
-  background: rgba(229, 224, 223, 0.07);
-  border: 1px solid rgba(229, 224, 223, 0.1);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.26);
-
-  @media (max-width: 1100px) {
-    position: relative;
-    right: auto;
-    bottom: auto;
-    width: 100%;
-  }
+/* ── Timeline (horizontal drag scroll) ── */
+const TimelineSection = styled.div`
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid rgba(24, 32, 51, 0.1);
 `;
 
-const ProfileLabel = styled.div`
-  margin-bottom: 20px;
-
-  color: var(--portfolio-rose-beige);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-`;
-
-const ProfileList = styled.ul`
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  display: grid;
+const TimelineTopRow = styled.div`
+  display: flex;
+  align-items: baseline;
   gap: 16px;
+  margin-bottom: 18px;
+`;
 
-  li {
-    display: grid;
-    gap: 4px;
+const TimelineHeader = styled.p`
+  margin: 0;
+  color: #865f68;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+`;
+
+const TimelineHint = styled.span`
+  color: rgba(24, 32, 51, 0.3);
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+`;
+
+const TimelineTrack = styled.div`
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  cursor: grab;
+  user-select: none;
+  padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+
+  /* 스크롤바 숨김 */
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 
-  span {
-    color: var(--portfolio-text-muted);
-    font-size: 12px;
-    font-weight: 300;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+  /* 우측 페이드 힌트 */
+  -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  mask-image: linear-gradient(to right, black 80%, transparent 100%);
+`;
 
-  strong {
-    color: var(--portfolio-white-soft);
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.03em;
+const TimelineCard = styled.div`
+  flex: 0 0 clamp(200px, 22vw, 270px);
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(24, 32, 51, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  scroll-snap-align: start;
+  transition: background 0.18s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.8);
   }
+`;
+
+const TimelineTag = styled.span`
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: ${({ $type }) =>
+    $type === "EDUCATION"
+      ? "rgba(109, 82, 119, 0.1)"
+      : "rgba(134, 95, 104, 0.1)"};
+  border: 1px solid ${({ $type }) =>
+    $type === "EDUCATION"
+      ? "rgba(109, 82, 119, 0.2)"
+      : "rgba(134, 95, 104, 0.2)"};
+  color: ${({ $type }) => ($type === "EDUCATION" ? "#6d5277" : "#865f68")};
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  align-self: flex-start;
+`;
+
+const TimelineCardTitle = styled.strong`
+  color: #172239;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+`;
+
+const TimelineCardSub = styled.span`
+  color: rgba(24, 32, 51, 0.55);
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.55;
+`;
+
+const TimelineCardPeriod = styled.span`
+  margin-top: 4px;
+  color: rgba(24, 32, 51, 0.32);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+`;
+
+const TimelineEndPad = styled.div`
+  flex: 0 0 40px;
 `;
