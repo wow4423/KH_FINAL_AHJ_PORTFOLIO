@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import styled, { css, keyframes } from "styled-components";
 
 const TABS = [
-  { id: "overview", label: "OVERVIEW" },
-  { id: "build",    label: "BUILD" },
-  { id: "solve",    label: "SOLVE" },
-  { id: "reflect",  label: "REFLECT" },
+  { id: "overview", label: "개요" },
+  { id: "build",    label: "구현" },
+  { id: "solve",    label: "문제 해결" },
+  { id: "reflect",  label: "회고" },
 ];
 
 const STACK_CATS = {
@@ -48,20 +48,14 @@ const REFLECT_CATS = {
 
 export default function ProjectModal({ project, onClose }) {
   const [activeTab,       setActiveTab]       = useState("overview");
-  const [openChallenges,  setOpenChallenges]  = useState(new Set([0]));
+  const [openChallenges,  setOpenChallenges]  = useState(new Set());
   const [openCodes,       setOpenCodes]       = useState(new Set());
+  const [openBuildCodes,  setOpenBuildCodes]  = useState(new Set());
+  const [selectedBuild,   setSelectedBuild]   = useState(0);
   const [lightboxImg,     setLightboxImg]     = useState(null);
   const lightboxRef = useRef(null);
 
   useEffect(() => { lightboxRef.current = lightboxImg; }, [lightboxImg]);
-
-  useEffect(() => {
-    if (!project) return;
-    setActiveTab("overview");
-    setOpenChallenges(new Set([0]));
-    setOpenCodes(new Set());
-    setLightboxImg(null);
-  }, [project?.id]);
 
   useEffect(() => {
     if (!project) return;
@@ -87,7 +81,9 @@ export default function ProjectModal({ project, onClose }) {
   const troubles  = d.troubles       ?? [];
   const stats     = d.stats          ?? [];
   const domains   = d.serviceDomains ?? [];
+  const roles     = d.roleHighlights ?? [];
   const reflect   = d.reflect        ?? {};
+  const leadership = reflect.leadership ?? null;
   const stackList = project.stack    ?? [];
 
   function toggleChallenge(idx) {
@@ -99,6 +95,13 @@ export default function ProjectModal({ project, onClose }) {
   }
   function toggleCode(idx) {
     setOpenCodes((prev) => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
+  }
+  function toggleBuildCode(idx) {
+    setOpenBuildCodes((prev) => {
       const next = new Set(prev);
       next.has(idx) ? next.delete(idx) : next.add(idx);
       return next;
@@ -130,9 +133,11 @@ export default function ProjectModal({ project, onClose }) {
                 <HeaderTitle>{project.title}</HeaderTitle>
               </HeaderLeft>
               <HeaderRight>
-                {project.links?.map((link) => (
+                {project.links
+                  ?.filter((link) => link.href && link.href !== "#")
+                  .map((link) => (
                   <LinkBtn key={link.label} href={link.href} target="_blank" rel="noreferrer">
-                    {link.label} ↗
+                    {link.label === "Service" ? "사이트 보기" : "GitHub"} <span>↗</span>
                   </LinkBtn>
                 ))}
                 <CloseButton type="button" onClick={onClose} aria-label="닫기">×</CloseButton>
@@ -217,19 +222,22 @@ export default function ProjectModal({ project, onClose }) {
 
                 {d.overview && <OverviewBody>{d.overview}</OverviewBody>}
 
+                {roles.length > 0 && (
+                  <RoleSection>
+                    <RoleSectionTitle>프로젝트에서 맡은 역할</RoleSectionTitle>
+                    <RoleGrid>
+                      {roles.map((role) => (
+                        <RoleCard key={role.title}>
+                          <RoleTitle>{role.title}</RoleTitle>
+                          <RoleBody>{role.body}</RoleBody>
+                        </RoleCard>
+                      ))}
+                    </RoleGrid>
+                  </RoleSection>
+                )}
+
                 {stackList.length > 0 && (
                   <StackBlock>
-                    <StackBlockLabel>TECH STACK</StackBlockLabel>
-                    <StackLegend>
-                      {Object.entries(STACK_CATS).map(([key, val]) => {
-                        if (!stackList.some((s) => val.keys.has(s))) return null;
-                        return (
-                          <LegendItem key={key} $color={val.color}>
-                            <LegendDot $color={val.color} />{key}
-                          </LegendItem>
-                        );
-                      })}
-                    </StackLegend>
                     <StackTags>
                       {stackList.map((s) => {
                         const st = getStackStyle(s);
@@ -247,52 +255,79 @@ export default function ProjectModal({ project, onClose }) {
             {activeTab === "build" && (
               <>
                 <TabIntro>
-                  <TabIntroTitle>What I Built</TabIntroTitle>
-                  <TabIntroSub>직접 설계하고 구현한 기능들 — 이미지를 클릭하면 확대됩니다</TabIntroSub>
+                  <TabIntroTitle>주요 구현</TabIntroTitle>
                 </TabIntro>
-                <ShowcaseList>
-                  {showcase.map((item) => {
-                    const hasImg = !!item.image;
-                    return (
-                      <ShowcaseItem key={item.tag} $hasImg={hasImg} $flip={item.flip}>
-                        {hasImg && !item.flip && (
-                          <ImgPanel>
-                            <ImgBox onClick={() => setLightboxImg(item.image)}>
-                              <ImgEl src={item.image} alt={item.imageLabel || item.title} />
-                              {item.imageLabel && <ImgCaption>{item.imageLabel}</ImgCaption>}
-                              <ImgZoomOverlay>
-                                <ImgZoomIcon>⤢</ImgZoomIcon>
-                                <ImgZoomText>클릭하여 확대</ImgZoomText>
-                              </ImgZoomOverlay>
-                            </ImgBox>
-                          </ImgPanel>
-                        )}
-                        <TextPanel>
-                          <ItemTag>{item.tag}</ItemTag>
-                          <ItemTitle>{item.title}</ItemTitle>
-                          <ItemContext>{item.context}</ItemContext>
-                          {item.points?.length > 0 && (
-                            <PointList>
-                              {item.points.map((p, i) => <li key={i}>{p}</li>)}
-                            </PointList>
-                          )}
-                        </TextPanel>
-                        {hasImg && item.flip && (
-                          <ImgPanel>
-                            <ImgBox onClick={() => setLightboxImg(item.image)}>
-                              <ImgEl src={item.image} alt={item.imageLabel || item.title} />
-                              {item.imageLabel && <ImgCaption>{item.imageLabel}</ImgCaption>}
-                              <ImgZoomOverlay>
-                                <ImgZoomIcon>⤢</ImgZoomIcon>
-                                <ImgZoomText>클릭하여 확대</ImgZoomText>
-                              </ImgZoomOverlay>
-                            </ImgBox>
-                          </ImgPanel>
-                        )}
-                      </ShowcaseItem>
-                    );
-                  })}
-                </ShowcaseList>
+                {showcase.length > 0 && (
+                  <BuildLayout>
+                    <BuildMenu>
+                      {showcase.map((item, idx) => (
+                        <BuildMenuButton
+                          key={item.tag}
+                          type="button"
+                          $active={selectedBuild === idx}
+                          onClick={() => setSelectedBuild(idx)}
+                        >
+                          <span>{item.tag}</span>
+                          <strong>{item.title}</strong>
+                        </BuildMenuButton>
+                      ))}
+                    </BuildMenu>
+
+                    <BuildDetail>
+                      {showcase[selectedBuild].image && (
+                        <BuildPreview
+                          type="button"
+                          onClick={() => setLightboxImg(showcase[selectedBuild].image)}
+                        >
+                          <img
+                            src={showcase[selectedBuild].image}
+                            alt={showcase[selectedBuild].imageLabel || showcase[selectedBuild].title}
+                          />
+                        </BuildPreview>
+                      )}
+
+                      <ItemTitle>{showcase[selectedBuild].title}</ItemTitle>
+                      <ItemContext>{showcase[selectedBuild].context}</ItemContext>
+
+                      {showcase[selectedBuild].points?.length > 0 && (
+                        <PointList>
+                          {showcase[selectedBuild].points.map((point) => (
+                            <li key={point}>{point}</li>
+                          ))}
+                        </PointList>
+                      )}
+
+                      {showcase[selectedBuild].decision && (
+                        <DecisionText>{showcase[selectedBuild].decision}</DecisionText>
+                      )}
+
+                      {showcase[selectedBuild].codeSnippet && (
+                        <BuildCodeArea>
+                          <BuildCodeButton
+                            type="button"
+                            onClick={() => toggleBuildCode(selectedBuild)}
+                            $open={openBuildCodes.has(selectedBuild)}
+                          >
+                            <span>핵심 코드</span>
+                            <BuildCodeIcon $open={openBuildCodes.has(selectedBuild)}>⌄</BuildCodeIcon>
+                          </BuildCodeButton>
+
+                          <AccordionWrap $open={openBuildCodes.has(selectedBuild)}>
+                            <AccordionInner>
+                              <BuildCodeBlock>
+                                <BuildCodeTop>
+                                  <span>{showcase[selectedBuild].codeTitle}</span>
+                                  <i>{showcase[selectedBuild].codeLanguage}</i>
+                                </BuildCodeTop>
+                                <pre>{showcase[selectedBuild].codeSnippet}</pre>
+                              </BuildCodeBlock>
+                            </AccordionInner>
+                          </AccordionWrap>
+                        </BuildCodeArea>
+                      )}
+                    </BuildDetail>
+                  </BuildLayout>
+                )}
               </>
             )}
 
@@ -300,8 +335,7 @@ export default function ProjectModal({ project, onClose }) {
             {activeTab === "solve" && (
               <>
                 <TabIntro>
-                  <TabIntroTitle>How I Solved It</TabIntroTitle>
-                  <TabIntroSub>제목을 클릭하면 내용이 펼쳐집니다</TabIntroSub>
+                  <TabIntroTitle>문제 해결</TabIntroTitle>
                 </TabIntro>
 
                 <ChallengeCards>
@@ -332,7 +366,37 @@ export default function ProjectModal({ project, onClose }) {
                           <AccordionInner>
                             <AccordionBody>
 
-                              {/* 수치 비교 스트립 (metrics가 있을 때만) */}
+                              <NarrativeGrid>
+                                <NarrativeBlock $type="problem">
+                                  <NarrativeMarker $type="problem">1</NarrativeMarker>
+                                  <NarrativeContent>
+                                    <NarrativeTag $type="problem">문제</NarrativeTag>
+                                    {t.problemTitle && <NarrativeTitle>{t.problemTitle}</NarrativeTitle>}
+                                    <NarrativeText>{t.problem}</NarrativeText>
+                                  </NarrativeContent>
+                                </NarrativeBlock>
+
+                                {t.consideration && (
+                                  <NarrativeBlock $type="consideration">
+                                    <NarrativeMarker $type="consideration">2</NarrativeMarker>
+                                    <NarrativeContent>
+                                      <NarrativeTag $type="consideration">고민</NarrativeTag>
+                                      {t.considerationTitle && <NarrativeTitle>{t.considerationTitle}</NarrativeTitle>}
+                                      <NarrativeText>{t.consideration}</NarrativeText>
+                                    </NarrativeContent>
+                                  </NarrativeBlock>
+                                )}
+
+                                <NarrativeBlock $type="solution">
+                                  <NarrativeMarker $type="solution">3</NarrativeMarker>
+                                  <NarrativeContent>
+                                    <NarrativeTag $type="solution">선택</NarrativeTag>
+                                    {t.solutionTitle && <NarrativeTitle>{t.solutionTitle}</NarrativeTitle>}
+                                    <NarrativeText $bright>{t.solution}</NarrativeText>
+                                  </NarrativeContent>
+                                </NarrativeBlock>
+                              </NarrativeGrid>
+
                               {t.metrics && (
                                 <MetricsStrip>
                                   <MetricsLabel>{t.metrics.label}</MetricsLabel>
@@ -352,18 +416,6 @@ export default function ProjectModal({ project, onClose }) {
                                   )}
                                 </MetricsStrip>
                               )}
-
-                              {/* 문제 */}
-                              <NarrativeBlock>
-                                <NarrativeTag $type="situation">SITUATION</NarrativeTag>
-                                <NarrativeText>{t.problem}</NarrativeText>
-                              </NarrativeBlock>
-
-                              {/* 해결 */}
-                              <NarrativeBlock>
-                                <NarrativeTag $type="approach">APPROACH</NarrativeTag>
-                                <NarrativeText $bright>{t.solution}</NarrativeText>
-                              </NarrativeBlock>
 
                               {/* 코드 토글 */}
                               {t.codeSnippet && (
@@ -399,13 +451,30 @@ export default function ProjectModal({ project, onClose }) {
             {/* ═══════════ REFLECT ═══════════ */}
             {activeTab === "reflect" && (
               <ReflectWrap>
+                {leadership && (
+                  <LeadershipSection>
+                    <LeadershipHead>
+                      <LeadershipLabel>TEAM LEAD</LeadershipLabel>
+                      <LeadershipTitle>{leadership.title}</LeadershipTitle>
+                      <LeadershipStatement>{leadership.statement}</LeadershipStatement>
+                    </LeadershipHead>
+                    <LeadershipGrid>
+                      {leadership.items?.map((item, i) => (
+                        <LeadershipCard key={item.title}>
+                          <LeadershipNum>0{i + 1}</LeadershipNum>
+                          <LeadershipCardTitle>{item.title}</LeadershipCardTitle>
+                          <LeadershipCardBody>{item.body}</LeadershipCardBody>
+                        </LeadershipCard>
+                      ))}
+                    </LeadershipGrid>
+                  </LeadershipSection>
+                )}
 
                 {/* ── LEARNED ── */}
                 {reflect.learned?.length > 0 && (
                   <ReflectSection>
                     <ReflectSectionHead>
-                      <ReflectSectionLabel>WHAT I LEARNED</ReflectSectionLabel>
-                      <ReflectSectionSub>이 프로젝트가 내 사고방식을 바꾼 것들</ReflectSectionSub>
+                      <ReflectSectionLabel>기능을 만들며 배운 점</ReflectSectionLabel>
                     </ReflectSectionHead>
                     <LearnedList>
                       {reflect.learned.map((item, i) => {
@@ -416,11 +485,6 @@ export default function ProjectModal({ project, onClose }) {
                               <LearnedNum $color={cat.color}>0{i + 1}</LearnedNum>
                             </LearnedLeft>
                             <LearnedContent>
-                              <LearnedTopRow>
-                                <ReflectTagBadge $color={cat.color} $bg={cat.bg} $border={cat.border}>
-                                  {item.tag}
-                                </ReflectTagBadge>
-                              </LearnedTopRow>
                               <LearnedTitle>{item.title}</LearnedTitle>
                               <LearnedBody>{item.body}</LearnedBody>
                             </LearnedContent>
@@ -435,25 +499,19 @@ export default function ProjectModal({ project, onClose }) {
                 {reflect.wouldDoDifferently?.length > 0 && (
                   <ReflectSection>
                     <ReflectSectionHead>
-                      <ReflectSectionLabel>WHAT I'D DO DIFFERENTLY</ReflectSectionLabel>
-                      <ReflectSectionSub>알고 있지만 못 했던 것, 다음엔 할 것</ReflectSectionSub>
+                      <ReflectSectionLabel>다시 만든다면</ReflectSectionLabel>
                     </ReflectSectionHead>
                     <WouldDoGrid>
                       {reflect.wouldDoDifferently.map((item, i) => {
                         if (typeof item === "string") {
                           return (
                             <WouldDoCard key={i}>
-                              <ReflectTagBadge $color={REFLECT_CATS.DEFAULT.color} $bg={REFLECT_CATS.DEFAULT.bg} $border={REFLECT_CATS.DEFAULT.border}>NOTE</ReflectTagBadge>
                               <WouldDoBody>{item}</WouldDoBody>
                             </WouldDoCard>
                           );
                         }
-                        const cat = REFLECT_CATS[item.category] ?? REFLECT_CATS.DEFAULT;
                         return (
                           <WouldDoCard key={i}>
-                            <ReflectTagBadge $color={cat.color} $bg={cat.bg} $border={cat.border}>
-                              {item.category}
-                            </ReflectTagBadge>
                             <WouldDoTitle>{item.title}</WouldDoTitle>
                             <WouldDoBody>{item.body}</WouldDoBody>
                           </WouldDoCard>
@@ -463,9 +521,9 @@ export default function ProjectModal({ project, onClose }) {
                   </ReflectSection>
                 )}
 
-                {/* ── CLOSING ── */}
                 {reflect.closing && (
                   <ReflectClosing>
+                    <ReflectClosingLabel>프로젝트를 마치며</ReflectClosingLabel>
                     <ReflectClosingText>{reflect.closing}</ReflectClosingText>
                   </ReflectClosing>
                 )}
@@ -550,25 +608,21 @@ const Overlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(9,10,16,0.85);
-  backdrop-filter: blur(20px);
+  background: rgba(7, 12, 23, 0.82);
+  backdrop-filter: blur(12px);
 `;
 
 const Content = styled.article`
   position: relative;
-  width: min(1120px, 100%);
-  height: min(920px, 92vh);
+  width: min(1180px, 100%);
+  height: min(900px, 94vh);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 24px;
-  background:
-    radial-gradient(ellipse 55% 28% at 15% -2%, rgba(116,130,189,0.2) 0%, transparent 55%),
-    linear-gradient(160deg, #171d28 0%, #0d1320 100%);
-  border: 1px solid rgba(255,255,255,0.07);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.03) inset,
-    0 80px 160px rgba(0,0,0,0.7);
+  border-radius: 18px;
+  background: #f6f5f2;
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: 0 48px 120px rgba(0,0,0,0.5);
 `;
 
 /* ═══════════════════════════════════════════
@@ -577,38 +631,42 @@ const Content = styled.article`
 
 const StickyTop = styled.div`
   flex-shrink: 0;
-  background: rgba(13,18,28,0.96);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: #111a2b;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
 `;
 
 const ModalHeader = styled.div`
-  padding: 20px 28px 16px;
+  min-height: 86px;
+  padding: 20px 30px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
+
+  @media (max-width: 720px) {
+    align-items: flex-start;
+    padding: 18px 20px;
+  }
 `;
 
 const HeaderLeft = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 `;
 
 const ProjectTypeBadge = styled.span`
-  color: var(--portfolio-rose-beige);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.22em;
-  opacity: 0.7;
+  color: #cdb7af;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
 `;
 
 const HeaderTitle = styled.h3`
   margin: 0;
   color: #f5f2f0;
-  font-size: clamp(20px, 2.2vw, 34px);
-  font-weight: 800;
+  font-size: clamp(25px, 2.3vw, 36px);
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.06em;
 `;
@@ -617,41 +675,56 @@ const HeaderRight = styled.div`
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 2px;
+  gap: 10px;
+
+  @media (max-width: 720px) {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
 `;
 
 const LinkBtn = styled.a`
-  height: 28px;
-  padding: 0 12px;
+  height: 42px;
+  padding: 0 17px;
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  background: rgba(116,130,189,0.12);
-  border: 1px solid rgba(116,130,189,0.24);
-  color: rgba(143,160,224,0.9);
-  font-size: 11px;
+  gap: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: #f8f7f4;
+  font-size: 14px;
   font-weight: 700;
   text-decoration: none;
   transition: background 0.18s, transform 0.18s, border-color 0.18s;
 
   &:hover {
-    background: rgba(116,130,189,0.22);
-    border-color: rgba(116,130,189,0.4);
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.24);
     transform: translateY(-1px);
+  }
+
+  span {
+    color: #d4b9b1;
+  }
+
+  @media (max-width: 560px) {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 12px;
   }
 `;
 
 const CloseButton = styled.button`
-  width: 30px;
-  height: 30px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  color: rgba(245,242,240,0.55);
-  font-size: 20px;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.76);
+  font-size: 24px;
   font-weight: 300;
   line-height: 1;
   transition: background 0.18s, transform 0.2s, color 0.18s;
@@ -664,22 +737,43 @@ const CloseButton = styled.button`
 `;
 
 const TabNav = styled.nav`
-  padding: 0 28px;
+  min-height: 64px;
+  padding: 0 30px;
   display: flex;
+  align-items: stretch;
+  gap: 8px;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 560px) {
+    padding: 0 14px;
+  }
 `;
 
 const TabBtn = styled.button`
-  padding: 10px 14px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  color: ${({ $active }) => ($active ? "#f5f2f0" : "rgba(245,242,240,0.28)")};
-  border-bottom: 2px solid
-    ${({ $active }) => ($active ? "var(--portfolio-rose-beige)" : "transparent")};
-  transition: color 0.18s, border-color 0.18s;
+  min-width: 104px;
+  padding: 0 18px;
+  font-size: 16px;
+  font-weight: ${({ $active }) => ($active ? "700" : "500")};
+  letter-spacing: -0.025em;
+  color: ${({ $active }) => ($active ? "#ffffff" : "rgba(255,255,255,0.56)")};
+  border-bottom: 3px solid
+    ${({ $active }) => ($active ? "#d1b7af" : "transparent")};
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
 
   &:hover {
-    color: ${({ $active }) => ($active ? "#f5f2f0" : "rgba(245,242,240,0.55)")};
+    color: #ffffff;
+    background: rgba(255,255,255,0.04);
+  }
+
+  @media (max-width: 560px) {
+    min-width: 92px;
+    padding: 0 12px;
+    font-size: 14px;
+    flex-shrink: 0;
   }
 `;
 
@@ -690,7 +784,8 @@ const TabBtn = styled.button`
 const TabBody = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 28px 36px 52px;
+  padding: 38px clamp(28px, 4.5vw, 64px) 64px;
+  color: #1a2232;
 
   &::-webkit-scrollbar { width: 5px; }
   &::-webkit-scrollbar-thumb {
@@ -709,12 +804,12 @@ const TabBody = styled.div`
 
 const StatsStrip = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   margin-bottom: 24px;
   border-radius: 14px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.07);
-  background: rgba(255,255,255,0.02);
+  border: 1px solid #dde0e6;
+  background: #ffffff;
 
   @media (max-width: 560px) { grid-template-columns: repeat(2, 1fr); }
 `;
@@ -724,28 +819,28 @@ const StatItem = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid #e3e5e9;
   &:last-child { border-right: none; }
 `;
 
 const StatValue = styled.strong`
-  color: #f5f2f0;
-  font-size: clamp(17px, 1.8vw, 24px);
-  font-weight: 800;
+  color: #172033;
+  font-size: clamp(20px, 1.8vw, 26px);
+  font-weight: 700;
   letter-spacing: -0.05em;
   line-height: 1;
 `;
 
 const StatLabel = styled.span`
-  color: rgba(245,242,240,0.38);
-  font-size: 11px;
-  font-weight: 400;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
 `;
 
 const Hero = styled.div`
   display: grid;
-  grid-template-columns: minmax(200px, 0.75fr) minmax(200px, 1.25fr);
-  gap: clamp(16px, 3vw, 40px);
+  grid-template-columns: minmax(240px, 0.82fr) minmax(280px, 1.18fr);
+  gap: clamp(24px, 4vw, 56px);
   align-items: center;
 
   @media (max-width: 680px) { grid-template-columns: 1fr; }
@@ -761,8 +856,8 @@ const Thumbnail = styled.div`
     $image
       ? `url(${$image}) center top / cover no-repeat`
       : `linear-gradient(140deg, rgba(37,64,122,0.9), rgba(116,130,189,0.4))`};
-  border: 1px solid rgba(255,255,255,0.07);
-  box-shadow: 0 20px 56px rgba(0,0,0,0.5);
+  border: 1px solid #d9dce2;
+  box-shadow: 0 16px 36px rgba(23,32,51,0.13);
 
   &::after {
     content: "";
@@ -808,11 +903,11 @@ const HeroText = styled.div`
 
 const HeroStatement = styled.p`
   margin: 0;
-  color: rgba(245,242,240,0.92);
-  font-size: clamp(15px, 1.15vw, 19px);
-  font-weight: 500;
-  line-height: 1.75;
-  letter-spacing: -0.035em;
+  color: #182134;
+  font-size: clamp(21px, 1.8vw, 29px);
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: -0.05em;
 `;
 
 const FlowRow = styled.div`
@@ -824,8 +919,8 @@ const FlowRow = styled.div`
 
 const FlowLabel = styled.span`
   flex-shrink: 0;
-  color: rgba(245,242,240,0.3);
-  font-size: 10px;
+  color: #687083;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -847,16 +942,16 @@ const FlowGroup = styled.span`
 const FlowStep = styled.span`
   padding: 3px 9px;
   border-radius: 6px;
-  background: rgba(116,130,189,0.12);
-  border: 1px solid rgba(116,130,189,0.2);
-  color: rgba(143,160,224,0.88);
-  font-size: 11px;
+  background: #eef0f7;
+  border: 1px solid #d9dce9;
+  color: #48557a;
+  font-size: 12px;
   font-weight: 600;
 `;
 
 const FlowArrow = styled.span`
-  color: rgba(116,130,189,0.3);
-  font-size: 11px;
+  color: #a1a6b0;
+  font-size: 12px;
 `;
 
 const HeroMeta = styled.div`
@@ -868,27 +963,165 @@ const HeroMeta = styled.div`
 const HeroPill = styled.span`
   padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(245,242,240,0.45);
-  font-size: 11px;
+  background: #ffffff;
+  border: 1px solid #dcdee4;
+  color: #51596a;
+  font-size: 12px;
+  font-weight: 500;
+`;
+
+const CaseStudyBlock = styled.section`
+  position: relative;
+  margin-top: 34px;
+  padding: clamp(26px, 4vw, 44px);
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(202,178,168,0.14);
+  background:
+    radial-gradient(
+      circle at 92% 0%,
+      rgba(202,178,168,0.13),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(202,178,168,0.055),
+      rgba(116,130,189,0.035)
+    );
+
+  &::after {
+    content: "WHY";
+    position: absolute;
+    right: -12px;
+    top: -28px;
+    color: rgba(245,242,240,0.025);
+    font-size: clamp(100px, 16vw, 210px);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.1em;
+    pointer-events: none;
+  }
+`;
+
+const CaseStudyEyebrow = styled.p`
+  position: relative;
+  z-index: 1;
+  margin: 0 0 14px;
+  color: var(--portfolio-rose-beige);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+`;
+
+const CaseStudyQuestion = styled.h4`
+  position: relative;
+  z-index: 1;
+  max-width: 850px;
+  margin: 0;
+  color: #f5f2f0;
+  font-family: "ChosunIlboMyungjo", "Noto Serif KR", serif;
+  font-size: clamp(24px, 2.8vw, 42px);
+  font-weight: normal;
+  line-height: 1.45;
+  letter-spacing: -0.065em;
+`;
+
+const PrincipleGrid = styled.div`
+  position: relative;
+  z-index: 1;
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const PrincipleCard = styled.article`
+  min-height: 170px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 15px;
+  background: rgba(8,12,20,0.32);
+  border: 1px solid rgba(255,255,255,0.065);
+`;
+
+const PrincipleNumber = styled.span`
+  color: rgba(202,178,168,0.55);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+`;
+
+const PrincipleTitle = styled.strong`
+  margin-top: auto;
+  color: #f5f2f0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+`;
+
+const PrincipleBody = styled.p`
+  margin: 9px 0 0;
+  color: rgba(245,242,240,0.52);
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.75;
+  letter-spacing: -0.025em;
+`;
+
+const QuestionShelf = styled.div`
+  position: relative;
+  z-index: 1;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+`;
+
+const QuestionShelfLabel = styled.span`
+  display: block;
+  margin-bottom: 12px;
+  color: rgba(245,242,240,0.4);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+`;
+
+const QuestionList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
+
+const QuestionChip = styled.span`
+  padding: 9px 13px;
+  border-radius: 9px;
+  background: rgba(8,12,20,0.34);
+  border: 1px solid rgba(202,178,168,0.18);
+  color: rgba(245,242,240,0.72);
+  font-size: 12px;
   font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
 `;
 
 const DomainBlock = styled.div`
   margin-top: 24px;
   padding: 18px 20px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.07);
-  background: rgba(255,255,255,0.02);
+  border: 1px solid #dfe1e6;
+  background: #ffffff;
   display: grid;
   gap: 12px;
 `;
 
 const DomainLabel = styled.p`
   margin: 0;
-  color: rgba(245,242,240,0.35);
-  font-size: 10px;
+  color: #6b7280;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -912,14 +1145,14 @@ const DomainChip = styled.span`
   ${({ $mine }) =>
     $mine
       ? css`
-          background: rgba(202,178,168,0.12);
-          border: 1.5px solid rgba(202,178,168,0.38);
-          color: var(--portfolio-rose-beige);
+          background: #f1e9e6;
+          border: 1px solid #d3b7ae;
+          color: #754f48;
         `
       : css`
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: rgba(245,242,240,0.32);
+          background: #f3f4f6;
+          border: 1px solid #e0e2e6;
+          color: #8a909b;
         `}
 `;
 
@@ -927,16 +1160,66 @@ const DomainDot = styled.span`
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--portfolio-rose-beige);
+  background: #a47369;
   flex-shrink: 0;
 `;
 
 const OverviewBody = styled.p`
   margin: 20px 0 0;
-  color: rgba(245,242,240,0.62);
+  max-width: 860px;
+  color: #495163;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.75;
+  letter-spacing: -0.022em;
+`;
+
+const RoleSection = styled.section`
+  margin-top: 28px;
+  display: grid;
+  gap: 13px;
+`;
+
+const RoleSectionTitle = styled.h3`
+  margin: 0;
+  color: #172033;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -0.045em;
+`;
+
+const RoleGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  @media (max-width: 650px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const RoleCard = styled.article`
+  min-height: 112px;
+  padding: 18px 20px;
+  border: 1px solid #dfe1e6;
+  border-radius: 13px;
+  background: #ffffff;
+`;
+
+const RoleTitle = styled.h4`
+  margin: 0 0 8px;
+  color: #744f48;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+`;
+
+const RoleBody = styled.p`
+  margin: 0;
+  color: #555d6d;
   font-size: 14px;
-  font-weight: 300;
-  line-height: 2;
+  font-weight: 400;
+  line-height: 1.7;
   letter-spacing: -0.022em;
 `;
 
@@ -992,10 +1275,10 @@ const StackTag = styled.span`
   display: inline-flex;
   align-items: center;
   border-radius: 7px;
-  background: ${({ $bg }) => $bg};
-  border: 1px solid ${({ $border }) => $border};
-  color: ${({ $color }) => $color};
-  font-size: 11px;
+  background: #ffffff;
+  border: 1px solid #dfe1e6;
+  color: #3e4658;
+  font-size: 12px;
   font-weight: 600;
 `;
 
@@ -1004,14 +1287,14 @@ const StackTag = styled.span`
 ═══════════════════════════════════════════ */
 
 const TabIntro = styled.div`
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 `;
 
 const TabIntroTitle = styled.h3`
-  margin: 0 0 6px;
-  color: #f5f2f0;
-  font-size: clamp(22px, 2.2vw, 34px);
-  font-weight: 800;
+  margin: 0;
+  color: #172033;
+  font-size: clamp(27px, 2.2vw, 36px);
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.07em;
 `;
@@ -1024,22 +1307,92 @@ const TabIntroSub = styled.p`
   letter-spacing: -0.02em;
 `;
 
+const BuildLayout = styled.div`
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const BuildMenu = styled.div`
+  display: grid;
+  gap: 6px;
+`;
+
+const BuildMenuButton = styled.button`
+  width: 100%;
+  min-height: 64px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 8px;
+  align-items: start;
+  border-radius: 9px;
+  border: 1px solid
+    ${({ $active }) =>
+      $active ? "#aeb6d2" : "#dfe1e6"};
+  background: ${({ $active }) =>
+    $active ? "#e9ebf4" : "#ffffff"};
+  text-align: left;
+
+  span {
+    color: #7580a8;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  strong {
+    color: ${({ $active }) =>
+      $active ? "#172033" : "#555d6d"};
+    font-size: 14px;
+    font-weight: ${({ $active }) => ($active ? "700" : "600")};
+    line-height: 1.45;
+    letter-spacing: -0.03em;
+  }
+`;
+
+const BuildDetail = styled.section`
+  min-width: 0;
+  padding: 26px;
+  border-radius: 14px;
+  border: 1px solid #dfe1e6;
+  background: #ffffff;
+`;
+
+const BuildPreview = styled.button`
+  width: 100%;
+  height: min(250px, 29vh);
+  margin-bottom: 22px;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid #d9dce2;
+  background: #eef0f3;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+`;
+
 const ShowcaseList = styled.div``;
 
 const ShowcaseItem = styled.article`
   display: grid;
-  grid-template-columns: ${({ $hasImg, $flip }) =>
-    !$hasImg ? "1fr" : $flip ? "0.92fr 1.08fr" : "1.08fr 0.92fr"};
-  gap: clamp(16px, 3.5vw, 48px);
-  align-items: center;
-  padding: 36px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  grid-template-columns: 1fr;
+  gap: 26px;
+  padding: 48px 0 56px;
+  border-bottom: 1px solid rgba(255,255,255,0.075);
 
   &:first-child { padding-top: 0; }
   &:last-child  { border-bottom: none; padding-bottom: 0; }
 
   @media (max-width: 640px) {
-    grid-template-columns: 1fr;
     padding: 24px 0;
   }
 `;
@@ -1067,7 +1420,7 @@ const ImgBox = styled.div`
 
 const ImgEl = styled.img`
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 7;
   object-fit: cover;
   object-position: top center;
   display: block;
@@ -1124,6 +1477,7 @@ const ImgZoomText = styled.span`
 const TextPanel = styled.div`
   display: flex;
   flex-direction: column;
+  max-width: 920px;
 `;
 
 const ItemTag = styled.p`
@@ -1137,8 +1491,8 @@ const ItemTag = styled.p`
 
 const ItemTitle = styled.h5`
   margin: 0 0 13px;
-  color: #f5f2f0;
-  font-size: clamp(17px, 1.5vw, 25px);
+  color: #172033;
+  font-size: clamp(23px, 1.8vw, 31px);
   font-weight: 700;
   line-height: 1.25;
   letter-spacing: -0.055em;
@@ -1146,10 +1500,10 @@ const ItemTitle = styled.h5`
 
 const ItemContext = styled.p`
   margin: 0 0 16px;
-  color: rgba(245,242,240,0.72);
-  font-size: 14px;
-  font-weight: 300;
-  line-height: 1.9;
+  color: #50586a;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.82;
   letter-spacing: -0.026em;
 `;
 
@@ -1163,9 +1517,9 @@ const PointList = styled.ul`
   li {
     position: relative;
     padding-left: 15px;
-    color: rgba(245,242,240,0.46);
-    font-size: 13px;
-    font-weight: 300;
+    color: #5c6475;
+    font-size: 14px;
+    font-weight: 500;
     line-height: 1.7;
 
     &::before {
@@ -1175,9 +1529,170 @@ const PointList = styled.ul`
       top: 0.72em;
       width: 6px;
       height: 1px;
-      background: var(--portfolio-rose-beige);
-      opacity: 0.4;
+      background: #9b6d64;
     }
+  }
+`;
+
+const DecisionCard = styled.div`
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border-left: 2px solid rgba(202,178,168,0.55);
+  background: rgba(202,178,168,0.055);
+`;
+
+const DecisionLabel = styled.span`
+  display: block;
+  margin-bottom: 8px;
+  color: var(--portfolio-rose-beige);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+`;
+
+const DecisionText = styled.p`
+  margin: 20px 0 0;
+  padding: 16px 18px;
+  border-left: 3px solid #b58a81;
+  background: #f4eeeb;
+  color: #4f4a4a;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.8;
+  letter-spacing: -0.02em;
+`;
+
+const InterviewPrompt = styled.div`
+  margin-top: 12px;
+  padding: 15px 18px;
+  border-radius: 12px;
+  background: rgba(143,160,224,0.08);
+  border: 1px solid rgba(143,160,224,0.17);
+
+  p {
+    margin: 6px 0 0;
+    color: rgba(245,242,240,0.78);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.65;
+    letter-spacing: -0.025em;
+  }
+`;
+
+const InterviewPromptLabel = styled.span`
+  color: rgba(143,160,224,0.8);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+`;
+
+const BuildCodeArea = styled.div`
+  margin-top: 14px;
+`;
+
+const BuildCodeButton = styled.button`
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid
+    ${({ $open }) =>
+      $open ? "#9ca7cb" : "#d8dbe2"};
+  background:
+    ${({ $open }) =>
+      $open
+        ? "#e8eaf3"
+        : "#f7f7f8"};
+  color: #30394d;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    border-color: #9ca7cb;
+    background: #eef0f7;
+    transform: translateY(-1px);
+  }
+`;
+
+const BuildCodeButtonText = styled.span`
+  display: grid;
+  gap: 4px;
+
+  > span:last-child {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.03em;
+  }
+`;
+
+const BuildCodeKicker = styled.span`
+  color: rgba(143,160,224,0.72);
+  font-family: "SFMono-Regular", "Consolas", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+`;
+
+const BuildCodeIcon = styled.span`
+  flex-shrink: 0;
+  color: #66739f;
+  font-size: 19px;
+  transform: ${({ $open }) => ($open ? "rotate(180deg)" : "rotate(0deg)")};
+  transition: transform 0.25s ease;
+`;
+
+const BuildCodeBlock = styled.div`
+  margin-top: 9px;
+  overflow: hidden;
+  border-radius: 13px;
+  border: 1px solid rgba(143,160,224,0.15);
+  background: #080d16;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
+
+  pre {
+    margin: 0;
+    padding: 20px;
+    overflow-x: auto;
+    color: rgba(222,229,255,0.76);
+    font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+    font-size: 11px;
+    line-height: 1.75;
+    tab-size: 2;
+  }
+`;
+
+const BuildCodeTop = styled.div`
+  min-height: 38px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.055);
+  background: rgba(255,255,255,0.022);
+
+  span {
+    color: rgba(245,242,240,0.52);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  i {
+    color: rgba(143,160,224,0.6);
+    font-family: "SFMono-Regular", "Consolas", monospace;
+    font-size: 9px;
+    font-style: normal;
   }
 `;
 
@@ -1187,27 +1702,28 @@ const PointList = styled.ul`
 
 const ChallengeCards = styled.div`
   display: grid;
-  gap: 10px;
+  gap: 12px;
 `;
 
 const ChallengeCard = styled.div`
-  border-radius: 18px;
+  border-radius: 12px;
   border: 1px solid ${({ $open }) =>
-    $open ? "rgba(116,130,189,0.22)" : "rgba(255,255,255,0.07)"};
+    $open ? "#aeb6d2" : "#dfe1e6"};
   background: ${({ $open }) =>
-    $open ? "rgba(116,130,189,0.04)" : "rgba(255,255,255,0.015)"};
+    $open ? "#f3f4f8" : "#ffffff"};
   overflow: hidden;
   transition: border-color 0.3s, background 0.3s;
 
   &:hover {
     border-color: ${({ $open }) =>
-      $open ? "rgba(116,130,189,0.28)" : "rgba(255,255,255,0.12)"};
+      $open ? "#9ca7cb" : "#c9cdd5"};
   }
 `;
 
 const ChallengeHeader = styled.button`
   width: 100%;
-  padding: 20px 24px;
+  min-height: 82px;
+  padding: 20px 22px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1218,7 +1734,7 @@ const ChallengeHeader = styled.button`
   transition: background 0.18s;
 
   &:hover {
-    background: rgba(255,255,255,0.018);
+    background: #f7f7f8;
   }
 `;
 
@@ -1237,12 +1753,11 @@ const CardIdx = styled.span`
   align-items: center;
   justify-content: center;
   border-radius: 9px;
-  background: ${({ $open }) =>
-    $open ? "rgba(202,178,168,0.15)" : "rgba(202,178,168,0.07)"};
+  background: ${({ $open }) => ($open ? "#eadfdb" : "#f1eeee")};
   border: 1px solid ${({ $open }) =>
-    $open ? "rgba(202,178,168,0.32)" : "rgba(202,178,168,0.14)"};
-  color: var(--portfolio-rose-beige);
-  font-size: 11px;
+    $open ? "#cbaaa1" : "#ddd3d0"};
+  color: #835c54;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.06em;
   transition: background 0.2s, border-color 0.2s;
@@ -1257,8 +1772,8 @@ const ChallengeHeaderText = styled.div`
 
 const CardTitle = styled.h4`
   margin: 0;
-  color: #f5f2f0;
-  font-size: clamp(14px, 1.2vw, 18px);
+  color: #172033;
+  font-size: clamp(16px, 1.25vw, 20px);
   font-weight: 700;
   line-height: 1.35;
   letter-spacing: -0.045em;
@@ -1269,10 +1784,10 @@ const KeyTermBadge = styled.span`
   align-self: flex-start;
   padding: 2px 8px;
   border-radius: 5px;
-  background: rgba(116,130,189,0.12);
-  border: 1px solid rgba(116,130,189,0.22);
-  color: rgba(143,160,224,0.88);
-  font-size: 11px;
+  background: #eceef5;
+  border: 1px solid #d5d9e8;
+  color: #5c678e;
+  font-size: 12px;
   font-weight: 700;
   font-family: 'SFMono-Regular', 'Consolas', monospace;
   letter-spacing: 0.02em;
@@ -1280,13 +1795,13 @@ const KeyTermBadge = styled.span`
 
 const ChevronIcon = styled.span`
   flex-shrink: 0;
-  color: rgba(245,242,240,0.3);
-  font-size: 20px;
+  color: #7b8290;
+  font-size: 24px;
   line-height: 1;
   transform: ${({ $open }) => ($open ? "rotate(90deg)" : "rotate(0deg)")};
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s;
 
-  ${ChallengeCard}:hover & { color: rgba(245,242,240,0.5); }
+  ${ChallengeCard}:hover & { color: #313a4d; }
 `;
 
 /* ─── Accordion ─── */
@@ -1303,48 +1818,58 @@ const AccordionInner = styled.div`
 `;
 
 const AccordionBody = styled.div`
-  padding: 0 24px 24px;
+  padding: 4px 24px 26px 68px;
   display: grid;
   gap: 20px;
+
+  @media (max-width: 640px) {
+    padding: 4px 16px 20px;
+  }
 `;
 
 /* ─── 수치 비교 스트립 ─── */
 
 const MetricsStrip = styled.div`
-  padding: 16px 18px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.025);
-  border: 1px solid rgba(255,255,255,0.07);
+  padding: 18px 20px;
+  border-radius: 13px;
+  background: #eef1f8;
+  border: 1px solid #d6dceb;
   display: grid;
-  gap: 12px;
+  grid-template-columns: auto 1fr;
+  column-gap: 22px;
+  row-gap: 10px;
+  align-items: center;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const MetricsLabel = styled.p`
   margin: 0;
-  color: rgba(245,242,240,0.32);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  color: #5c678e;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 `;
 
 const MetricsRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: clamp(14px, 3vw, 34px);
 `;
 
 const MetricsBefore = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  min-width: 145px;
+  display: grid;
+  gap: 4px;
 `;
 
 const MetricsAfter = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  min-width: 145px;
+  display: grid;
+  gap: 4px;
 `;
 
 const MetricsValue = styled.strong`
@@ -1353,75 +1878,145 @@ const MetricsValue = styled.strong`
   letter-spacing: -0.06em;
   line-height: 1;
   color: ${({ $highlight }) =>
-    $highlight ? "rgba(143,160,224,0.95)" : "rgba(245,242,240,0.45)"};
+    $highlight ? "#4f608f" : "#7b8290"};
 `;
 
 const MetricsSub = styled.span`
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
   letter-spacing: -0.01em;
   color: ${({ $highlight }) =>
-    $highlight ? "rgba(143,160,224,0.7)" : "rgba(245,242,240,0.3)"};
+    $highlight ? "#59678f" : "#747b89"};
 `;
 
 const MetricsArrow = styled.span`
-  font-size: 22px;
-  color: rgba(245,242,240,0.18);
+  font-size: 24px;
+  color: #9ca6bf;
   flex-shrink: 0;
 `;
 
 const MetricsNote = styled.p`
+  grid-column: 2;
   margin: 0;
   padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  color: rgba(245,242,240,0.35);
+  border-top: 1px solid #d8deea;
+  color: #747b89;
   font-size: 12px;
-  font-weight: 300;
+  font-weight: 400;
+  line-height: 1.55;
   letter-spacing: -0.01em;
+
+  @media (max-width: 640px) {
+    grid-column: 1;
+  }
 `;
 
 /* ─── 문제/해결 서사 블록 ─── */
 
-const NarrativeBlock = styled.div`
+const NarrativeGrid = styled.div`
   display: grid;
-  gap: 10px;
+  gap: 0;
+`;
+
+const NarrativeBlock = styled.div`
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 16px;
+  padding: 4px 0 24px;
+
+  &:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 18px;
+    top: 38px;
+    bottom: 0;
+    width: 1px;
+    background: #d8dce5;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+`;
+
+const NarrativeMarker = styled.span`
+  position: relative;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid
+    ${({ $type }) =>
+      $type === "problem"
+        ? "#d9b6aa"
+        : $type === "consideration"
+          ? "#bdc6df"
+          : "#b7d0c0"};
+  background:
+    ${({ $type }) =>
+      $type === "problem"
+        ? "#f8ebe7"
+        : $type === "consideration"
+          ? "#eef1f8"
+          : "#eaf4ed"};
+  color:
+    ${({ $type }) =>
+      $type === "problem"
+        ? "#8d5b50"
+        : $type === "consideration"
+          ? "#59678f"
+          : "#46705a"};
+  font-size: 12px;
+  font-weight: 800;
+`;
+
+const NarrativeContent = styled.div`
+  min-width: 0;
+  padding: 1px 0 0;
+  display: grid;
+  gap: 7px;
 `;
 
 const NarrativeTag = styled.span`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.18em;
-
-  &::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    opacity: 0.18;
-  }
+  letter-spacing: -0.02em;
 
   ${({ $type }) =>
-    $type === "situation"
+    $type === "problem"
       ? css`
-          color: rgba(228,148,100,0.75);
-          &::after { background: rgba(228,148,100,1); }
+          color: #9a5e48;
         `
-      : css`
-          color: rgba(143,160,224,0.75);
-          &::after { background: rgba(143,160,224,1); }
+      : $type === "consideration"
+        ? css`
+          color: #59678f;
+        `
+        : css`
+          color: #46705a;
         `}
+`;
+
+const NarrativeTitle = styled.h5`
+  margin: 0;
+  color: #20293b;
+  font-size: clamp(16px, 1.2vw, 19px);
+  font-weight: 750;
+  line-height: 1.4;
+  letter-spacing: -0.045em;
 `;
 
 const NarrativeText = styled.p`
   margin: 0;
   font-size: 14px;
-  font-weight: 300;
-  line-height: 1.9;
+  font-weight: 400;
+  line-height: 1.68;
   letter-spacing: -0.022em;
   color: ${({ $bright }) =>
-    $bright ? "rgba(245,242,240,0.82)" : "rgba(245,242,240,0.6)"};
+    $bright ? "#30394c" : "#596173"};
 `;
 
 /* ─── 코드 토글 ─── */
@@ -1437,10 +2032,10 @@ const CodeToggleBtn = styled.button`
   gap: 6px;
   padding: 6px 12px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: rgba(245,242,240,0.45);
-  font-size: 11px;
+  background: #f4f5f7;
+  border: 1px solid #d9dce2;
+  color: #4e5769;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -1448,9 +2043,9 @@ const CodeToggleBtn = styled.button`
   transition: background 0.18s, color 0.18s, border-color 0.18s;
 
   &:hover {
-    background: rgba(116,130,189,0.1);
-    border-color: rgba(116,130,189,0.22);
-    color: rgba(143,160,224,0.85);
+    background: #eceef5;
+    border-color: #afb7d1;
+    color: #48557d;
   }
 `;
 
@@ -1493,7 +2088,100 @@ const CodeBlock = styled.div`
 
 const ReflectWrap = styled.div`
   display: grid;
-  gap: 44px;
+  gap: 34px;
+`;
+
+const LeadershipSection = styled.section`
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid #d9d5df;
+  background:
+    radial-gradient(circle at 90% 0%, rgba(116, 130, 189, 0.12), transparent 34%),
+    #ffffff;
+`;
+
+const LeadershipHead = styled.div`
+  max-width: 900px;
+  padding: clamp(24px, 4vw, 38px);
+`;
+
+const LeadershipLabel = styled.span`
+  display: block;
+  margin-bottom: 10px;
+  color: #8b625a;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+`;
+
+const LeadershipTitle = styled.h3`
+  margin: 0;
+  color: #172033;
+  font-size: clamp(25px, 2.3vw, 34px);
+  font-weight: 750;
+  letter-spacing: -0.06em;
+`;
+
+const LeadershipStatement = styled.p`
+  margin: 13px 0 0;
+  color: #51596a;
+  font-size: clamp(15px, 1.25vw, 18px);
+  font-weight: 500;
+  line-height: 1.72;
+  letter-spacing: -0.03em;
+`;
+
+const LeadershipGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid #e0e1e6;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const LeadershipCard = styled.article`
+  min-height: 156px;
+  padding: 22px;
+  border-right: 1px solid #e0e1e6;
+
+  &:last-child {
+    border-right: 0;
+  }
+
+  @media (max-width: 760px) {
+    min-height: auto;
+    border-right: 0;
+    border-bottom: 1px solid #e0e1e6;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+`;
+
+const LeadershipNum = styled.span`
+  color: #a17b73;
+  font-size: 11px;
+  font-weight: 800;
+`;
+
+const LeadershipCardTitle = styled.h4`
+  margin: 18px 0 7px;
+  color: #20293b;
+  font-size: 17px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+`;
+
+const LeadershipCardBody = styled.p`
+  margin: 0;
+  color: #5c6475;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.68;
+  letter-spacing: -0.022em;
 `;
 
 const ReflectSection = styled.div`
@@ -1506,17 +2194,16 @@ const ReflectSectionHead = styled.div`
   align-items: baseline;
   gap: 12px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid #d9dce2;
 `;
 
 const ReflectSectionLabel = styled.p`
   margin: 0;
   flex-shrink: 0;
-  color: rgba(245,242,240,0.3);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  color: #172033;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.045em;
 `;
 
 const ReflectSectionSub = styled.span`
@@ -1539,12 +2226,12 @@ const LearnedCard = styled.div`
   gap: 16px;
   padding: 18px 20px;
   border-radius: 15px;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid #dfe1e6;
   border-left: 2px solid ${({ $color }) => $color};
-  background: rgba(255,255,255,0.018);
+  background: #ffffff;
   transition: background 0.2s;
 
-  &:hover { background: rgba(255,255,255,0.03); }
+  &:hover { background: #fafafa; }
 `;
 
 const LearnedLeft = styled.div`
@@ -1573,8 +2260,8 @@ const LearnedTopRow = styled.div`
 
 const LearnedTitle = styled.h5`
   margin: 0;
-  color: #f5f2f0;
-  font-size: clamp(14px, 1.15vw, 17px);
+  color: #172033;
+  font-size: clamp(16px, 1.15vw, 19px);
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.045em;
@@ -1582,10 +2269,10 @@ const LearnedTitle = styled.h5`
 
 const LearnedBody = styled.p`
   margin: 0;
-  color: rgba(245,242,240,0.62);
+  color: #555d6d;
   font-size: 14px;
-  font-weight: 300;
-  line-height: 1.9;
+  font-weight: 400;
+  line-height: 1.72;
   letter-spacing: -0.025em;
 `;
 
@@ -1609,29 +2296,33 @@ const ReflectTagBadge = styled.span`
 
 const WouldDoGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const WouldDoCard = styled.div`
   padding: 16px 18px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.06);
-  background: rgba(255,255,255,0.015);
+  border: 1px solid #dfe1e6;
+  background: #ffffff;
   display: grid;
   gap: 8px;
   transition: border-color 0.2s, background 0.2s;
 
   &:hover {
-    border-color: rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.025);
+    border-color: #c9cdd5;
+    background: #fafafa;
   }
 `;
 
 const WouldDoTitle = styled.h5`
   margin: 0;
-  color: rgba(245,242,240,0.88);
-  font-size: clamp(13px, 1.05vw, 15px);
+  color: #172033;
+  font-size: clamp(15px, 1.05vw, 17px);
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.04em;
@@ -1639,29 +2330,38 @@ const WouldDoTitle = styled.h5`
 
 const WouldDoBody = styled.p`
   margin: 0;
-  color: rgba(245,242,240,0.5);
-  font-size: 13px;
-  font-weight: 300;
-  line-height: 1.85;
+  color: #596173;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.75;
   letter-spacing: -0.02em;
 `;
 
 /* ─── Closing ─── */
 
 const ReflectClosing = styled.div`
-  padding: 18px 22px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.05);
-  border-left: 3px solid rgba(202,178,168,0.3);
-  background: rgba(255,255,255,0.015);
+  padding: clamp(22px, 4vw, 34px);
+  border-radius: 16px;
+  border: 1px solid #dfd7d4;
+  border-left: 3px solid #b58a81;
+  background: #f4eeeb;
+`;
+
+const ReflectClosingLabel = styled.span`
+  display: block;
+  margin-bottom: 10px;
+  color: #875e56;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 `;
 
 const ReflectClosingText = styled.p`
   margin: 0;
-  color: rgba(245,242,240,0.4);
-  font-size: 14px;
-  font-weight: 300;
-  font-style: italic;
-  line-height: 1.85;
-  letter-spacing: -0.02em;
+  color: #554d4b;
+  max-width: 900px;
+  font-size: clamp(17px, 1.5vw, 21px);
+  font-weight: 650;
+  line-height: 1.65;
+  letter-spacing: -0.04em;
 `;

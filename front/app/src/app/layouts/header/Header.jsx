@@ -7,7 +7,6 @@ const headerMenus = [
   { label: "ABOUT", section: "about" },
   { label: "STACKS", section: "stacks" },
   { label: "PROJECTS", section: "projects" },
-  { label: "CONTACT", section: "contact" },
 ];
 
 export default function Header({ activeSection = "intro" }) {

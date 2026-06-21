@@ -115,6 +115,24 @@
   text-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
 }
 
+.intro-signature {
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: rgba(247, 244, 242, 0.62);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.intro-signature i {
+  width: 22px;
+  height: 1px;
+  background: rgba(202, 178, 168, 0.52);
+}
+
 /* ================================
    Temporary Sections
 ================================ */
@@ -149,6 +167,36 @@
   font-size: 20px;
   line-height: 1.8;
 }
+
+.contact-section {
+  min-height: 72vh;
+  display: flex;
+  align-items: center;
+  background:
+    radial-gradient(
+      circle at 72% 30%,
+      rgba(202, 178, 168, 0.15),
+      transparent 23%
+    ),
+    linear-gradient(145deg, #f0eae7 0%, #dddce8 100%);
+}
+
+.contact-section h2 {
+  max-width: 980px;
+  color: #141b2b;
+  font-family: "ChosunIlboMyungjo", serif;
+  font-size: clamp(42px, 5.5vw, 86px);
+  font-weight: normal;
+  line-height: 1.25;
+}
+
+.contact-section p {
+  max-width: 680px;
+  margin-top: 26px;
+  color: rgba(20, 27, 43, 0.66);
+  font-size: clamp(15px, 1.1vw, 19px);
+}
+
 
 /* ================================
    Responsive

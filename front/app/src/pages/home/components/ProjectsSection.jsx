@@ -22,26 +22,32 @@ export default function ProjectsSection() {
         <SectionHeader>
           <SectionLabel>PROJECTS</SectionLabel>
 
-          <Title>프로젝트 포트폴리오</Title>
+          <Title>프로젝트</Title>
 
           <Description>
-            단순히 화면을 구현하는 것에서 끝나지 않고, 사용자의 흐름과 데이터의
-            이동 과정을 함께 고민하며 완성한 프로젝트들을 정리했습니다.
+            담당한 기능과 문제 해결 과정을 정리했습니다.
           </Description>
         </SectionHeader>
 
         <ProjectGrid>
-          {projects.map((project) => (
+          {[...projects]
+            .sort((a, b) => Number(b.id === "final") - Number(a.id === "final"))
+            .map((project) => (
             <ProjectCard
               key={project.id}
               project={project}
               onClick={openModal}
+              featured={project.id === "final"}
             />
           ))}
         </ProjectGrid>
       </Inner>
 
-      <ProjectModal project={selectedProject} onClose={closeModal} />
+      <ProjectModal
+        key={selectedProject?.id ?? "closed"}
+        project={selectedProject}
+        onClose={closeModal}
+      />
     </Wrapper>
   );
 }
@@ -97,8 +103,8 @@ const Inner = styled.div`
 `;
 
 const SectionHeader = styled.div`
-  max-width: 820px;
-  margin-bottom: clamp(58px, 6vw, 92px);
+  max-width: 900px;
+  margin-bottom: clamp(42px, 5vw, 68px);
 `;
 
 const SectionLabel = styled.p`
@@ -115,7 +121,7 @@ const Title = styled.h2`
 
   color: var(--portfolio-white-soft);
   font-family: "ChosunIlboMyungjo", "Noto Serif KR", serif;
-  font-size: clamp(46px, 5.4vw, 92px);
+  font-size: clamp(38px, 4.4vw, 70px);
   font-weight: normal;
   line-height: 1.16;
   letter-spacing: -0.065em;
@@ -134,10 +140,6 @@ const Description = styled.p`
 
 const ProjectGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(28px, 4vw, 58px);
-
-  @media (max-width: 1060px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: 1fr;
+  gap: clamp(42px, 6vw, 82px);
 `;

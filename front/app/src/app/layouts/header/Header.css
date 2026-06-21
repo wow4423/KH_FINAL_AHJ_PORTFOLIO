@@ -4,14 +4,16 @@
 
 .portfolio-header {
   width: 100%;
-  height: 86px;
+  height: 72px;
 
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
 
-  background: transparent;
+  background: rgba(11, 17, 29, 0.78);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(18px);
   color: #ffffff;
 }
 
@@ -31,8 +33,8 @@
   position: relative;
   z-index: 2;
 
-  width: 130px;
-  height: 82px;
+  width: 110px;
+  height: 68px;
 
   display: inline-flex;
   align-items: center;
@@ -46,7 +48,7 @@
 }
 
 .portfolio-logo img {
-  width: 120px;
+  width: 100px;
   height: auto;
   display: block;
   object-fit: contain;
@@ -73,8 +75,8 @@
 }
 
 .portfolio-nav-button {
-  height: 48px;
-  padding: 0 17px;
+  height: 38px;
+  padding: 0 14px;
 
   display: inline-flex;
   align-items: center;
@@ -87,7 +89,8 @@
 
   font-family: "PyeojinGothic", "Noto Sans KR", sans-serif;
 
-  font-size: clamp(13px, 0.85vw, 16px);
+  font-size: clamp(11px, 0.75vw, 14px);
+  letter-spacing: 0.04em;
   font-weight: 700;
   letter-spacing: -0.02em;
 
@@ -124,7 +127,7 @@
   }
 
   .portfolio-header-inner {
-    min-height: 86px;
+    min-height: 72px;
     padding: 16px 22px 14px;
     flex-direction: column;
     align-items: flex-start;

@@ -1,26 +1,30 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 
 export default function ProjectPreview({ project }) {
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selection, setSelection] = useState({
+    projectId: project?.id,
+    imageIndex: 0,
+  });
 
   const previewImages = project?.previewImages ?? [];
+  const selectedImageIndex =
+    selection.projectId === project?.id ? selection.imageIndex : 0;
 
   const hasPreviewImages = previewImages.length > 0;
   const currentPreview = hasPreviewImages
     ? previewImages[selectedImageIndex]
     : null;
 
-  useEffect(() => {
-    setSelectedImageIndex(0);
-  }, [project]);
-
   if (!hasPreviewImages) {
     return null;
   }
 
   function handleSelectImage(index) {
-    setSelectedImageIndex(index);
+    setSelection({
+      projectId: project?.id,
+      imageIndex: index,
+    });
   }
 
   return (

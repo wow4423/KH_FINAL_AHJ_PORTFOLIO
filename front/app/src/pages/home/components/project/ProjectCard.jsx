@@ -1,6 +1,6 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
-export default function ProjectCard({ project, onClick }) {
+export default function ProjectCard({ project, onClick, featured = false }) {
   function handleCardClick() {
     onClick(project);
   }
@@ -10,8 +10,8 @@ export default function ProjectCard({ project, onClick }) {
   }
 
   return (
-    <Card onClick={handleCardClick}>
-      <Thumbnail $image={project.thumbnail}>
+    <Card onClick={handleCardClick} $featured={featured}>
+      <Thumbnail $image={project.thumbnail} $featured={featured}>
         {!project.thumbnail && (
           <ThumbnailFallback>
             <span>{project.type}</span>
@@ -32,7 +32,9 @@ export default function ProjectCard({ project, onClick }) {
         </ProjectMeta>
 
         <ProjectLinkList>
-          {project.links?.map((link) => (
+          {project.links
+            ?.filter((link) => link.href && link.href !== "#")
+            .map((link) => (
             <ProjectLink
               key={link.label}
               href={link.href}
@@ -59,18 +61,33 @@ export default function ProjectCard({ project, onClick }) {
 
 const Card = styled.article`
   cursor: pointer;
+  position: relative;
   display: grid;
-  gap: 26px;
+  grid-template-columns: minmax(260px, 0.58fr) minmax(0, 1.42fr);
+  gap: clamp(24px, 4vw, 52px);
+  align-items: center;
+  padding: 22px 0 34px;
+  border-bottom: 1px solid rgba(229, 224, 223, 0.09);
 
   transition:
     transform 0.24s ease,
     opacity 0.24s ease;
 
+  ${({ $featured }) =>
+    $featured &&
+    css`
+      padding-top: 0;
+    `}
+
   &:hover {
-    transform: translateY(-8px);
+    transform: translateX(6px);
   }
 
   &:hover ${"" /* 링크 hover와 충돌 방지용으로 별도 처리 */} {
+  }
+
+  @media (max-width: 980px) {
+    grid-template-columns: 1fr;
   }
 `;
 
@@ -117,6 +134,12 @@ const Thumbnail = styled.div`
         transparent 24%
       );
   }
+
+  ${({ $featured }) =>
+    $featured &&
+    css`
+      border-color: rgba(202, 178, 168, 0.18);
+    `}
 `;
 
 const ThumbnailFallback = styled.div`
@@ -150,6 +173,8 @@ const ThumbnailFallback = styled.div`
 `;
 
 const ProjectBody = styled.div`
+  position: relative;
+  z-index: 1;
   padding: 0 4px;
 `;
 
@@ -157,7 +182,7 @@ const ProjectTitle = styled.h3`
   margin: 0;
 
   color: var(--portfolio-white-soft);
-  font-size: clamp(28px, 2vw, 40px);
+  font-size: clamp(25px, 1.8vw, 34px);
   font-weight: 700;
   line-height: 1.22;
   letter-spacing: -0.06em;
@@ -205,7 +230,7 @@ const ProjectSummary = styled.p`
 `;
 
 const ProjectLinkList = styled.div`
-  margin-top: 24px;
+  margin-top: 20px;
 
   display: flex;
   flex-wrap: wrap;
@@ -283,7 +308,7 @@ const DetailButton = styled.button`
 `;
 
 const StackList = styled.div`
-  margin-top: 22px;
+  margin-top: 18px;
 
   display: flex;
   flex-wrap: wrap;

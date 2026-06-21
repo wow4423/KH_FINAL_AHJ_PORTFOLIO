@@ -24,17 +24,26 @@ export default function HomePage() {
           <p className="intro-eyebrow">FULLSTACK WEB DEVELOPER PORTFOLIO</p>
 
           <h1 className="intro-title">
-            안녕하세요.
+            보이지 않던 흐름을
             <br />
-            넘어보는 개발자
+            끝까지 따라가
             <br />
-            한준 입니다.
+            분명하게 만듭니다.
           </h1>
 
           <p className="intro-desc">
-            사용자 경험을 고려한 화면 구성과 데이터 흐름 설계를 바탕으로,
-            서비스를 개발하는 풀스택 개발자입니다.
+            사용자가 자연스럽게 움직이는 화면과
+            <br />
+            시간이 지나도 믿을 수 있는 데이터를 설계하는 개발자 안한준입니다.
           </p>
+
+          <div className="intro-signature">
+            <span>UI FLOW</span>
+            <i />
+            <span>DATA FLOW</span>
+            <i />
+            <span>SERVICE LOGIC</span>
+          </div>
         </div>
       </section>
 
@@ -43,13 +52,6 @@ export default function HomePage() {
       <StacksSection />
 
       <ProjectsSection />
-
-      <section id="contact" className="portfolio-section contact-section">
-        <div className="portfolio-section-inner">
-          <h2>CONTACT</h2>
-          <p>이메일, GitHub, Notion 링크를 배치하는 영역입니다.</p>
-        </div>
-      </section>
     </div>
   );
 }
