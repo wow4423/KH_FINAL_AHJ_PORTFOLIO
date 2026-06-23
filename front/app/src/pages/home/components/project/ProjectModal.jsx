@@ -341,114 +341,118 @@ export default function ProjectModal({ project, onClose }) {
 
                     {/* 우측 상세 */}
                     <BuildDetail>
-                      {/* ① 헤더: 태그 + 제목 */}
-                      <BDHeader>
-                        <BuildDetailTag>
-                          {showcase[selectedBuild].tag}
-                        </BuildDetailTag>
-                        <BuildDetailTitle>
-                          {showcase[selectedBuild].title}
-                        </BuildDetailTitle>
-                      </BDHeader>
+                      {/* 배경 이미지 레이어 */}
+                      {showcase[selectedBuild].image && (
+                        <>
+                          <BuildBg $img={showcase[selectedBuild].image} />
+                          <BuildBgVeil />
+                        </>
+                      )}
 
-                      {/* ② 컨텍스트: 항상 전폭 */}
-                      <BDContext>
-                        <BuildDetailContext>
-                          {showcase[selectedBuild].context}
-                        </BuildDetailContext>
-                      </BDContext>
-
-                      {/* ③ 포인트(좌) + 이미지 고정 오른쪽 */}
-                      <BDMid $hasImg={!!showcase[selectedBuild].image}>
-                        <BuildPointList>
-                          {showcase[selectedBuild].points?.map((p) => (
-                            <li key={p}>{p}</li>
-                          ))}
-                        </BuildPointList>
-
+                      <BuildContentWrap>
+                        {/* ① 전폭 이미지 스트립 */}
                         {showcase[selectedBuild].image && (
-                          <BDImgBtn
+                          <BuildImgStrip
                             onClick={() =>
                               setLightboxImg(showcase[selectedBuild].image)
                             }
                           >
-                            <BuildImg
+                            <BuildStripImg
                               src={showcase[selectedBuild].image}
-                              alt={
-                                showcase[selectedBuild].imageLabel ||
-                                showcase[selectedBuild].title
-                              }
+                              alt={showcase[selectedBuild].title}
                             />
-                            <BDImgHover>확대 보기 ↗</BDImgHover>
-                            {showcase[selectedBuild].imageLabel && (
-                              <BDImgLabel>
-                                {showcase[selectedBuild].imageLabel}
-                              </BDImgLabel>
-                            )}
-                          </BDImgBtn>
+                            <BuildStripGradient />
+                            <BuildStripHint>확대 보기 ↗</BuildStripHint>
+                          </BuildImgStrip>
                         )}
-                      </BDMid>
 
-                      {/* ④ 고민 + 판단 카드: 2열 */}
-                      {(showcase[selectedBuild].consideration ||
-                        showcase[selectedBuild].decision) && (
-                        <BDCards>
-                          {showcase[selectedBuild].consideration && (
-                            <ConsiderationCard>
-                              <ConsiderationCardLabel>
-                                고민한 점
-                              </ConsiderationCardLabel>
-                              <ConsiderationCardText>
-                                {showcase[selectedBuild].consideration}
-                              </ConsiderationCardText>
-                            </ConsiderationCard>
-                          )}
-                          {showcase[selectedBuild].decision && (
-                            <DecisionCard>
-                              <DecisionCardLabel>판단 이유</DecisionCardLabel>
-                              <DecisionCardText>
-                                {showcase[selectedBuild].decision}
-                              </DecisionCardText>
-                            </DecisionCard>
-                          )}
-                        </BDCards>
-                      )}
+                        {/* ② 헤더: 태그 + 제목 */}
+                        <BDHeader>
+                          <BuildDetailTag>
+                            {showcase[selectedBuild].tag}
+                          </BuildDetailTag>
+                          <BuildDetailTitle>
+                            {showcase[selectedBuild].title}
+                          </BuildDetailTitle>
+                        </BDHeader>
 
-                      {/* ⑤ 코드 */}
-                      {showcase[selectedBuild].codeSnippet && (
-                        <BDCode>
-                          <CodeToggleArea>
-                            <CodeToggleBtn
-                              type="button"
-                              onClick={() => toggleBuildCode(selectedBuild)}
-                              $open={openBuildCodes.has(selectedBuild)}
-                            >
-                              <CodeToggleIcon
+                        {/* ② 컨텍스트: 전폭 */}
+                        <BDContext>
+                          <BuildDetailContext>
+                            {showcase[selectedBuild].context}
+                          </BuildDetailContext>
+                        </BDContext>
+
+                        {/* ③ 포인트 — 단일 컬럼 */}
+                        <BDMid>
+                          <BuildPointList>
+                            {showcase[selectedBuild].points?.map((p) => (
+                              <li key={p}>{p}</li>
+                            ))}
+                          </BuildPointList>
+                        </BDMid>
+
+                        {/* ④ 고민 + 판단 카드: 2열 */}
+                        {(showcase[selectedBuild].consideration ||
+                          showcase[selectedBuild].decision) && (
+                          <BDCards>
+                            {showcase[selectedBuild].consideration && (
+                              <ConsiderationCard>
+                                <ConsiderationCardLabel>
+                                  고민한 점
+                                </ConsiderationCardLabel>
+                                <ConsiderationCardText>
+                                  {showcase[selectedBuild].consideration}
+                                </ConsiderationCardText>
+                              </ConsiderationCard>
+                            )}
+                            {showcase[selectedBuild].decision && (
+                              <DecisionCard>
+                                <DecisionCardLabel>판단 이유</DecisionCardLabel>
+                                <DecisionCardText>
+                                  {showcase[selectedBuild].decision}
+                                </DecisionCardText>
+                              </DecisionCard>
+                            )}
+                          </BDCards>
+                        )}
+
+                        {/* ⑤ 코드 */}
+                        {showcase[selectedBuild].codeSnippet && (
+                          <BDCode>
+                            <CodeToggleArea>
+                              <CodeToggleBtn
+                                type="button"
+                                onClick={() => toggleBuildCode(selectedBuild)}
                                 $open={openBuildCodes.has(selectedBuild)}
                               >
-                                ›
-                              </CodeToggleIcon>
-                              {openBuildCodes.has(selectedBuild)
-                                ? "코드 닫기"
-                                : "핵심 코드 보기"}
-                            </CodeToggleBtn>
+                                <CodeToggleIcon
+                                  $open={openBuildCodes.has(selectedBuild)}
+                                >
+                                  ›
+                                </CodeToggleIcon>
+                                {openBuildCodes.has(selectedBuild)
+                                  ? "코드 닫기"
+                                  : "핵심 코드 보기"}
+                              </CodeToggleBtn>
 
-                            <AccordionWrap
-                              $open={openBuildCodes.has(selectedBuild)}
-                            >
-                              <AccordionInner>
-                                <CodeViewer
-                                  code={showcase[selectedBuild].codeSnippet}
-                                  title={showcase[selectedBuild].codeTitle}
-                                  language={
-                                    showcase[selectedBuild].codeLanguage
-                                  }
-                                />
-                              </AccordionInner>
-                            </AccordionWrap>
-                          </CodeToggleArea>
-                        </BDCode>
-                      )}
+                              <AccordionWrap
+                                $open={openBuildCodes.has(selectedBuild)}
+                              >
+                                <AccordionInner>
+                                  <CodeViewer
+                                    code={showcase[selectedBuild].codeSnippet}
+                                    title={showcase[selectedBuild].codeTitle}
+                                    language={
+                                      showcase[selectedBuild].codeLanguage
+                                    }
+                                  />
+                                </AccordionInner>
+                              </AccordionWrap>
+                            </CodeToggleArea>
+                          </BDCode>
+                        )}
+                      </BuildContentWrap>
                     </BuildDetail>
                   </BuildLayout>
                 )}
@@ -1433,12 +1437,94 @@ const BuildMenuTitle = styled.span`
 
 const BuildDetail = styled.section`
   overflow-y: auto;
+  position: relative;
   &::-webkit-scrollbar {
     width: 3px;
   }
   &::-webkit-scrollbar-thumb {
     border-radius: 999px;
     background: rgba(0, 0, 0, 0.1);
+  }
+`;
+
+/* ── 배경 이미지 레이어: 크게 블러+채도 올려 색감만 남김 ── */
+const BuildBg = styled.div`
+  position: absolute;
+  inset: -40px;
+  background-image: ${({ $img }) => `url(${$img})`};
+  background-size: cover;
+  background-position: top center;
+  filter: blur(52px) brightness(1.08) saturate(2.4);
+  transform: scale(1.06);
+  z-index: 0;
+  pointer-events: none;
+`;
+
+/* ── 크림 오버레이: 텍스트 분리 + 기존 배경색 느낌 유지 ── */
+const BuildBgVeil = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(244, 242, 239, 0.86);
+  z-index: 0;
+  pointer-events: none;
+`;
+
+/* ── 콘텐츠 래퍼 ── */
+const BuildContentWrap = styled.div`
+  position: relative;
+  z-index: 2;
+`;
+
+/* ── 전폭 이미지 스트립 ── */
+const BuildImgStrip = styled.button`
+  display: block;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  cursor: zoom-in;
+  line-height: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  flex-shrink: 0;
+`;
+
+const BuildStripImg = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  ${BuildImgStrip}:hover & {
+    transform: scale(1.03);
+  }
+`;
+
+const BuildStripGradient = styled.div`
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(244, 242, 239, 0.55) 100%
+  );
+  pointer-events: none;
+`;
+
+const BuildStripHint = styled.span`
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: rgba(10, 14, 26, 0.42);
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  transition: opacity 0.2s;
+  ${BuildImgStrip}:hover & {
+    opacity: 1;
   }
 `;
 
@@ -1457,20 +1543,14 @@ const BDContext = styled.div`
   padding: 18px 28px 0;
 `;
 
-/* ③ 포인트(좌) + 이미지(우) */
+/* ③ 포인트 — 단일 컬럼 (이미지는 배경으로) */
 const BDMid = styled.div`
   margin-top: 16px;
   padding: 0 28px;
   display: grid;
   gap: 20px;
   align-items: start;
-
-  grid-template-columns: ${({ $hasImg }) =>
-    $hasImg ? "1fr 280px" : "1fr"};
-
-  @media (max-width: 760px) {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: 1fr;
 `;
 
 /* 이미지 버튼 — 항상 오른쪽 열 */
@@ -1617,9 +1697,10 @@ const BuildPointList = styled.ul`
 const ConsiderationCard = styled.div`
   padding: 16px 18px;
   border-radius: 10px;
-  background: #f6f8fd;
+  background: rgba(246, 248, 253, 0.92);
   border: 1px solid #d2daea;
   border-left: 3px solid #7090c0;
+  backdrop-filter: blur(6px);
 `;
 
 const ConsiderationCardLabel = styled.span`
@@ -1644,9 +1725,10 @@ const ConsiderationCardText = styled.p`
 const DecisionCard = styled.div`
   padding: 16px 18px;
   border-radius: 10px;
-  background: #fdf8f6;
+  background: rgba(253, 248, 246, 0.92);
   border: 1px solid #e8d8d2;
   border-left: 3px solid #b08078;
+  backdrop-filter: blur(6px);
 `;
 
 const DecisionCardLabel = styled.span`
@@ -1682,7 +1764,7 @@ const CodeToggleBtn = styled.button`
   gap: 7px;
   padding: 7px 13px;
   border-radius: 8px;
-  background: #f0ede8;
+  background: rgba(240, 237, 232, 0.90);
   border: 1px solid rgba(0, 0, 0, 0.1);
   color: #4b566e;
   font-family: inherit;
@@ -1695,9 +1777,7 @@ const CodeToggleBtn = styled.button`
     color 0.18s,
     border-color 0.18s;
   &:hover {
-    background: #e8e4dd;
-    border-color: rgba(0, 0, 0, 0.15);
-    color: #141c2e;
+    opacity: 0.8;
   }
 `;
 
