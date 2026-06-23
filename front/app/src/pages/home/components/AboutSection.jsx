@@ -10,6 +10,12 @@ const career = [
     sub: "글로벌경영학과",
   },
   {
+    period: "2018.01 – 2018.07",
+    tag: "WORK",
+    title: "군종행정 부사관",
+    sub: "3기갑여단",
+  },
+  {
     period: "2020.12 – 2025.07",
     tag: "WORK",
     title: "이트너스",
@@ -72,16 +78,16 @@ export default function AboutSection() {
 
             <MainText>
               <p>
-                B2B 기업 홍보기획팀에서 기업 지원 플랫폼을 기획하고 알리는
-                일을 했습니다. 서비스를 전달하는 입장에서 일하다 보니,
-                플랫폼 안에서 기능과 데이터가 연결되어 하나로 움직이는
-                구조가 눈에 들어왔고 그걸 직접 만들고 싶다는 생각이 커졌습니다.
+                B2B 기업 홍보기획팀에서 기업 지원 플랫폼을 기획하고 알리는 일을
+                했습니다. 서비스를 전달하는 입장에서 일하다 보니, 플랫폼 안에서
+                기능과 데이터가 연결되어 하나로 움직이는 구조가 눈에 들어왔고
+                그걸 직접 만들고 싶다는 생각이 커졌습니다.
               </p>
               <p>
                 개발을 배우며 단순히 화면을 완성하는 것보다, 사용자의 흐름에
-                맞게 기능을 연결하고 데이터를 일관되게 유지하는 과정이 가장
-                보람 있었습니다. 서비스 목적과 사용자 관점을 먼저 고민해온
-                경험이 지금 코드를 짤 때 방향을 잡아준다고 믿습니다.
+                맞게 기능을 연결하고 데이터를 일관되게 유지하는 과정이 가장 보람
+                있었습니다. 서비스 목적과 사용자 관점을 먼저 고민해온 경험이
+                지금 코드를 짤 때 방향을 잡아준다고 믿습니다.
               </p>
             </MainText>
 
@@ -253,19 +259,19 @@ const ProfileItem = styled.div`
 `;
 
 const ProfileItemLabel = styled.span`
-  color: rgba(24, 32, 51, 0.4);
-  font-size: 10px;
-  font-weight: 600;
+  color: rgba(24, 32, 51, 0.5);
+  font-size: 12px;
+  font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 `;
 
 const ProfileItemValue = styled.span`
   color: #172239;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   letter-spacing: -0.02em;
-  line-height: 1.4;
+  line-height: 1.45;
 `;
 
 /* ── Visual (right column) ── */
@@ -371,11 +377,6 @@ const TimelineCard = styled.div`
   flex-direction: column;
   gap: 7px;
   scroll-snap-align: start;
-  transition: background 0.18s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.8);
-  }
 `;
 
 const TimelineTag = styled.span`
@@ -386,10 +387,11 @@ const TimelineTag = styled.span`
     $type === "EDUCATION"
       ? "rgba(109, 82, 119, 0.1)"
       : "rgba(134, 95, 104, 0.1)"};
-  border: 1px solid ${({ $type }) =>
-    $type === "EDUCATION"
-      ? "rgba(109, 82, 119, 0.2)"
-      : "rgba(134, 95, 104, 0.2)"};
+  border: 1px solid
+    ${({ $type }) =>
+      $type === "EDUCATION"
+        ? "rgba(109, 82, 119, 0.2)"
+        : "rgba(134, 95, 104, 0.2)"};
   color: ${({ $type }) => ($type === "EDUCATION" ? "#6d5277" : "#865f68")};
   font-size: 10px;
   font-weight: 700;

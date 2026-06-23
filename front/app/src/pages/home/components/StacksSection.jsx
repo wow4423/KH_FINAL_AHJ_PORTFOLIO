@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { FaAws, FaJava } from "react-icons/fa";
+import { FaAws, FaJava, FaServer, FaDatabase } from "react-icons/fa";
 import {
   SiHibernate,
   SiJavascript,
@@ -9,39 +9,52 @@ import {
   SiSpringboot,
   SiSpringsecurity,
   SiStyledcomponents,
+  SiHtml5,
+  SiGit,
+  SiGithub,
+  SiIntellijidea,
+  SiGradle,
 } from "react-icons/si";
 
 const stackGroups = [
   {
     label: "Frontend",
     items: [
-      { name: "React", icon: SiReact },
-      { name: "JavaScript", icon: SiJavascript },
-      { name: "Redux Toolkit", icon: SiRedux },
-      { name: "styled-components", icon: SiStyledcomponents },
+      { name: "React", icon: SiReact, color: "#61DAFB" },
+      { name: "JavaScript", icon: SiJavascript, color: "#F7DF1E" },
+      { name: "Redux Toolkit", icon: SiRedux, color: "#A78BFA" },
+      { name: "styled-components", icon: SiStyledcomponents, color: "#E879B9" },
+      { name: "HTML5 · CSS3", icon: SiHtml5, color: "#E34F26" },
     ],
   },
   {
     label: "Backend",
     items: [
-      { name: "Java", icon: FaJava },
-      { name: "Spring Boot", icon: SiSpringboot },
-      { name: "Spring Security", icon: SiSpringsecurity },
-      { name: "JPA · Hibernate", icon: SiHibernate },
+      { name: "Java", icon: FaJava, color: "#E76F00" },
+      { name: "Spring Boot", icon: SiSpringboot, color: "#6DB33F" },
+      { name: "Spring Security", icon: SiSpringsecurity, color: "#6DB33F" },
+      { name: "JPA · Hibernate", icon: SiHibernate, color: "#BCAE79" },
+      { name: "MyBatis", badge: "MB", color: "#D98A6A" },
     ],
   },
   {
-    label: "Data · Infra",
+    label: "Data · Cloud",
     items: [
-      { name: "PostgreSQL", icon: SiPostgresql },
-      { name: "AWS", icon: FaAws },
+      { name: "PostgreSQL", icon: SiPostgresql, color: "#7BA7E8" },
+      { name: "Oracle", icon: FaDatabase, color: "#E66A5A" },
+      { name: "AWS EC2", icon: FaServer, color: "#FF9900" },
+      { name: "AWS RDS", icon: FaDatabase, color: "#5C8DFF" },
+      { name: "AWS S3", icon: FaAws, color: "#FF9900" },
     ],
   },
   {
-    label: "Creative",
+    label: "Tools · Creative",
     items: [
-      { name: "Premiere Pro", badge: "Pr" },
-      { name: "After Effects", badge: "Ae" },
+      { name: "Git", icon: SiGit, color: "#F05032" },
+      { name: "GitHub", icon: SiGithub, color: "#D6D2DE" },
+      { name: "IntelliJ IDEA", icon: SiIntellijidea, color: "#C792EA" },
+      { name: "Gradle", icon: SiGradle, color: "#8FBCC8" },
+      { name: "Premiere Pro · After Effects", badge: "Pr", color: "#A6A0FF" },
     ],
   },
 ];
@@ -62,8 +75,12 @@ export default function StacksSection() {
               <ItemList>
                 {group.items.map((stack) => (
                   <StackItem key={stack.name}>
-                    <StackIcon aria-hidden="true">
-                      {stack.icon ? <stack.icon /> : <StackBadge>{stack.badge}</StackBadge>}
+                    <StackIcon aria-hidden="true" $color={stack.color}>
+                      {stack.icon ? (
+                        <stack.icon />
+                      ) : (
+                        <StackBadge $color={stack.color}>{stack.badge}</StackBadge>
+                      )}
                     </StackIcon>
                     <StackName>{stack.name}</StackName>
                   </StackItem>
@@ -188,22 +205,23 @@ const StackItem = styled.div`
 `;
 
 const StackIcon = styled.span`
-  width: 28px;
-  height: 28px;
-  flex: 0 0 28px;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
   display: grid;
   place-items: center;
-  border-radius: 7px;
-  background: rgba(202, 178, 168, 0.09);
-  color: #d2b9b1;
-  font-size: 15px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: ${({ $color }) => $color || "#d2b9b1"};
+  font-size: 17px;
 `;
 
 const StackBadge = styled.span`
   font-size: 11px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #d2b9b1;
+  color: ${({ $color }) => $color || "#d2b9b1"};
 `;
 
 const StackName = styled.span`

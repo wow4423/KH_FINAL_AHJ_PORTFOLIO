@@ -1,6 +1,11 @@
-import styled, { css, keyframes } from "styled-components";
+import styled, { css } from "styled-components";
 
-export default function ProjectCard({ project, onClick, featured = false, index = 0 }) {
+export default function ProjectCard({
+  project,
+  onClick,
+  featured = false,
+  index = 0,
+}) {
   const num = String(index + 1).padStart(2, "0");
 
   return (
@@ -36,17 +41,22 @@ export default function ProjectCard({ project, onClick, featured = false, index 
         <ProjectActions>
           {project.links
             ?.filter((l) => l.href && l.href !== "#")
-            .map((link) => (
-              <ProjectLink
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {link.label}
-              </ProjectLink>
-            ))}
+            .map((link) => {
+              const isService = link.label === "Service";
+              return (
+                <ProjectLink
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  $primary={isService}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {isService ? "Site" : "GitHub"}
+                  <ExternalArrow>↗</ExternalArrow>
+                </ProjectLink>
+              );
+            })}
 
           <DetailButton type="button">
             <span>자세히 보기</span>
@@ -198,7 +208,7 @@ const ThumbnailOverlay = styled.div`
   ${Card}:hover & {
     background: linear-gradient(
       180deg,
-      rgba(13, 17, 28, 0.0) 0%,
+      rgba(13, 17, 28, 0) 0%,
       rgba(24, 14, 10, 0.14) 55%,
       rgba(30, 18, 12, 0.68) 100%
     );
@@ -335,6 +345,13 @@ const ProjectActions = styled.div`
   gap: 8px;
 `;
 
+const ExternalArrow = styled.span`
+  margin-left: 6px;
+  display: inline-block;
+  font-size: 12px;
+  transition: transform 0.22s ease;
+`;
+
 const ProjectLink = styled.a`
   height: 32px;
   padding: 0 14px;
@@ -343,12 +360,8 @@ const ProjectLink = styled.a`
   align-items: center;
 
   border-radius: 999px;
-  border: 1px solid rgba(202, 178, 168, 0.25);
-  background: rgba(202, 178, 168, 0.06);
-
-  color: var(--portfolio-rose-beige);
   font-size: 11.5px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.01em;
   text-decoration: none;
 
@@ -356,21 +369,30 @@ const ProjectLink = styled.a`
     background 0.22s ease,
     border-color 0.22s ease,
     transform 0.22s ease,
-    color 0.22s ease;
+    color 0.22s ease,
+    box-shadow 0.22s ease;
+
+  ${({ $primary }) =>
+    $primary
+      ? css`
+          border: 1px solid var(--portfolio-rose-beige, #cbb2a8);
+          background: var(--portfolio-rose-beige, #cbb2a8);
+          color: #1a1410;
+          box-shadow: 0 6px 16px rgba(203, 178, 168, 0.28);
+        `
+      : css`
+          border: 1px solid rgba(202, 178, 168, 0.25);
+          background: rgba(202, 178, 168, 0.06);
+          color: var(--portfolio-rose-beige);
+        `}
 
   &:hover {
-    color: #fff;
-    border-color: rgba(202, 178, 168, 0.65);
-    background: rgba(202, 178, 168, 0.14);
     transform: translateY(-2px);
   }
-`;
 
-const arrowSlide = keyframes`
-  from { transform: translateX(0); opacity: 1; }
-  50%  { transform: translateX(5px); opacity: 0; }
-  51%  { transform: translateX(-5px); opacity: 0; }
-  to   { transform: translateX(0); opacity: 1; }
+  &:hover ${ExternalArrow} {
+    transform: translate(2px, -2px);
+  }
 `;
 
 const Arrow = styled.span`
@@ -440,7 +462,10 @@ const StackTag = styled.span`
   font-weight: 300;
   letter-spacing: -0.015em;
 
-  transition: background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease;
 
   ${Card}:hover & {
     background: rgba(229, 224, 223, 0.075);

@@ -1,3 +1,9 @@
+/* ── Scroll snap ── */
+html {
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
 .portfolio-page {
   width: 100%;
   min-height: 100vh;
@@ -5,10 +11,26 @@
   background-color: var(--portfolio-navy-black);
 }
 
+/* 모든 섹션을 스냅 대상으로 */
+.portfolio-page > * {
+  scroll-snap-align: start;
+}
+
 .portfolio-section {
   width: 100%;
   min-height: 100vh;
   padding: 120px clamp(28px, 6vw, 110px);
+}
+
+/* ── Print / PDF ── */
+@media print {
+  html {
+    scroll-snap-type: none;
+  }
+  .portfolio-page > * {
+    break-after: page;
+    page-break-after: always;
+  }
 }
 
 .portfolio-section-inner {
