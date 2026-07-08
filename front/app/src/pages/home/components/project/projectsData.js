@@ -86,171 +86,164 @@ export const projects = [
       showcase: [
         {
           tag: "01",
-          title: "조직·직원 데이터 모델 설계",
+          title: "근태 자동 row 생성 · 출퇴근 상태 판정",
           context:
-            "DB 관리자로서 MEMBER 테이블을 중심에 두고 부서·직급·매장·재직상태를 연결했습니다. 직급(POSITION)이 기본급·상여율을 보유하게 해 기대급여가 직급에서 파생되도록 했고, 매장 점주는 STORE가 직원을 참조하게 설계했습니다. 조회 한 번으로 한 사람의 소속·직급·기대급여·재직상태가 함께 나오도록 관계를 잡았습니다.",
+            "근태를 집계하려면 그날 직원별 row가 먼저 존재해야 합니다. 사용자가 출근을 눌러야만 row가 생기는 구조면 결근자가 통째로 누락됩니다. 매일 정오 스케줄러로 재직자 전원의 근태 row를 선생성하고, 출근 시점에도 없으면 즉석 생성하는 이중 안전장치를 만들었습니다. 출퇴근 처리에는 09:00 기준 정상(1)/지각(2) 자동 판정과 승인된 OT 시간을 실제로 채웠는지 확인 후 인정OT를 기록하는 로직도 포함했습니다.",
           points: [
-            "MEMBER 중심 + 부서·직급·매장·재직상태 참조 관계 설계",
-            "직급이 기본급·상여율 보유 → 기대급여를 쿼리에서 파생",
-            "QUIT_YN 소프트 삭제로 퇴사자 이력 보존",
+            "@Scheduled 매일 정오 — 재직자 전원 근태 row 자동 생성 (주말 제외)",
+            "출근 시 row 없으면 즉석 생성 → 이중 안전장치",
+            "09:00 기준 정상(1)·지각(2) 서버 자동 판정",
+            "퇴근 시 승인OT 시간 충족 여부 확인 후 인정OT 기록",
           ],
           consideration:
-            "급여 기준값(기본급·상여율)을 직원 테이블에 두면 같은 직급인데도 직원마다 값이 달라질 수 있습니다. 또 부서 직원과 매장 점주를 별도 테이블로 나누면 근태·급여 로직이 두 갈래가 됩니다. 일관성과 단순한 구조를 동시에 잡는 방법을 고민했습니다.",
+            "출근 시에만 row를 만들면 결근자 데이터가 생기지 않고, 스케줄러에만 의존하면 서버 장애 시 그날 데이터 전체에 공백이 생깁니다. 어느 한쪽에만 책임을 맡기는 것이 안전한지 고민했습니다.",
           decision:
-            "급여의 기준값을 직원이 아닌 직급에 두어, 직급 정책이 바뀌면 한 곳만 고쳐도 전 직원의 기대급여가 따라오게 했습니다. 데이터의 '기준'을 어디에 둘지를 먼저 정한 설계입니다.",
-          codeTitle: "한 직원의 소속·직급·기대급여를 한 번에 조회",
-          codeLanguage: "SQL · Oracle",
-          codeSnippet: `SELECT M.EMP_NO, M.EMP_NAME,
-       P.POS_NAME, P.BASE_SALARY, P.BONUS_RATE,
-       (P.BASE_SALARY + P.BASE_SALARY * P.BONUS_RATE) AS EXPECTED_SALARY,
-       CASE WHEN S.STORE_NAME IS NOT NULL
-            THEN S.STORE_NAME ELSE D.DEPT_NAME END AS ORG_NAME,
-       CS.STATUS_NAME
-  FROM MEMBER M
-  LEFT JOIN DEPT D            ON M.DEPT_CODE = D.DEPT_CODE
-  LEFT JOIN POSITION P        ON M.POS_CODE  = P.POS_CODE
-  LEFT JOIN STORE S           ON S.OWNER_EMP_NO = M.EMP_NO  -- 점주면 매장 소속
-  LEFT JOIN CURRENT_STATUS CS ON M.EMP_STATUS_NO = CS.EMP_STATUS_NO
- WHERE M.QUIT_YN = 'N'  -- 소프트 삭제: 퇴사자 제외`,
-          image: semiEmp01,
-          imageLabel: "직원 전체 조회",
+            "근태 row의 존재를 사용자 행동에 의존시키지 않기로 했습니다. 스케줄러로 데이터를 먼저 보장하고, 스케줄러 누락에 대비해 출근 시점에도 보강 생성하도록 책임을 이중화했습니다.",
+          codeTitle: "스케줄러 선생성 + 출근 시점 이중 안전장치",
+          codeLanguage: "Java · Spring Boot",
+          codeSnippet: `// AttScheduler.java — 매일 정오, 재직자 전원 근태 row 선생성
+@Scheduled(cron = "0 0 12 * * *")
+public void initTodayAttendance() {
+    LocalDate today = LocalDate.now();
+    if (today.getDayOfWeek() == DayOfWeek.SATURDAY
+            || today.getDayOfWeek() == DayOfWeek.SUNDAY) return;
+    attService.initDailyAttendance(today.toString());
+}
+
+// AttService.checkIn() — 출근 시 row 없으면 즉석 생성 (이중 안전장치)
+AttVo vo = attMapper.selectAttendanceByEmpNoAndDate(empNo, workDate);
+if (vo == null) {
+    attMapper.insertTodayAttendanceRow(empNo, workDate);
+    vo = attMapper.selectAttendanceByEmpNoAndDate(empNo, workDate);
+}
+if ("4".equals(vo.getStatusCode()))
+    throw new IllegalStateException("오늘은 휴가 상태라 출근할 수 없습니다.");
+if (vo.getCheckInAt() != null)
+    throw new IllegalStateException("이미 출근 처리되었습니다.");
+
+// 09:00 기준 정상(1) / 지각(2) 자동 판정
+int statusCode = LocalTime.now().isAfter(LocalTime.of(9, 0)) ? 2 : 1;
+attMapper.updateCheckIn(empNo, workDate, statusCode);`,
+          image: semiAtt01,
+          imageLabel: "근태 전체 조회",
           flip: false,
         },
         {
           tag: "02",
-          title: "근태 자동 생성 · 출퇴근 처리",
+          title: "전자결재 승인 → 근태 자동 반영 (멱등 처리)",
           context:
-            "근태를 집계하려면 그날 직원별 근태 row가 먼저 존재해야 합니다. 사용자가 출근을 눌러야만 생기는 구조면 결근자가 통째로 누락되므로, 매일 정오 스케줄러로 재직자 전원의 근태 row를 선생성하고 출근 시점에 없으면 즉석에서 만드는 이중 안전장치를 뒀습니다.",
+            "휴가·연장근무 결재가 승인되면 그 내용이 근태에 자동 반영되어야 합니다. 다른 팀원이 담당한 결재 도메인의 테이블을 조인해 승인 문서를 가져오고, 카테고리에 따라 휴가/연장근무 처리를 분기합니다. 휴가는 기간을 하루씩 순회하며 근태에 반영하고, 같은 결재가 두 번 반영되어도 데이터가 깨지지 않도록 멱등하게 처리했습니다.",
           points: [
-            "@Scheduled 기반 매일 정오 근태 row 자동 생성 (주말 제외)",
-            "출근 시 09:00 기준 정상(1)·지각(2) 자동 판정",
-            "휴가일 출근 차단, 중복 출·퇴근 차단 등 상태 검증",
+            "docNo로 결재 카테고리 조회 후 휴가(1)/연장근무(2) 분기",
+            "휴가: 시작일~종료일 하루씩 순회하며 근태 반영",
+            "checkAttendanceExists 확인 후 없으면 insert, 있으면 update — 멱등성 확보",
+            "연장근무: 승인된 시간을 OT 컬럼에 기록",
           ],
           consideration:
-            "출근 시에만 row를 만들면 결근자 데이터가 생기지 않고, 스케줄러 단독으로 생성하면 서버 장애 시 공백이 생깁니다. 어느 한 쪽에만 책임을 맡기는 것이 안전한지, 두 방법을 어떻게 조합할지 고민했습니다.",
+            "결재 반영이 두 번 실행될 경우, 무조건 insert하면 중복 row가 쌓이고 무조건 update하면 최초 생성 시 실패합니다. 어느 쪽도 단독으로는 안전하지 않았습니다.",
           decision:
-            "근태 데이터의 존재 여부를 사용자 행동에 의존시키지 않기로 했습니다. 스케줄러로 데이터를 선보장하되, 스케줄러 누락에 대비해 출근 시점에도 보강 생성하도록 책임을 이중화했습니다.",
-          codeTitle: "스케줄러로 선생성하고, 출근 시점에 보강 생성",
+            "결재 반영은 재실행될 수 있다고 가정했습니다. 해당일 근태 row 존재 여부를 먼저 확인해 없으면 insert, 있으면 update로 분기해 어떤 순서로 실행해도 결과가 같도록 멱등성을 확보했습니다.",
+          codeTitle: "카테고리 분기 + 멱등 처리",
           codeLanguage: "Java · Spring Boot",
-          codeSnippet: `// 매일 정오 — 재직자 전원의 그날 근태 row를 선생성
-@Scheduled(cron = "0 0 12 * * *")
-public void initTodayAttendance() {
-    LocalDate today = LocalDate.now();
-    if (today.getDayOfWeek() == SATURDAY
-            || today.getDayOfWeek() == SUNDAY) return; // 주말 방어
-    attService.initDailyAttendance(today.toString());
+          codeSnippet: `// 승인 문서 카테고리로 처리 분기
+public void applyApproval(String docNo) {
+    String categoryNo = attMapper.selectApprovalCategoryByDocNo(docNo);
+    if ("1".equals(categoryNo)) applyVacationApproval(docNo);
+    else if ("2".equals(categoryNo)) applyOvertimeApproval(docNo);
 }
 
-// 출근 시점에 row가 없으면 즉석 생성 (이중 안전장치)
-public void checkIn(String empNo) {
-    String today = LocalDate.now().toString();
-    AttVo vo = attMapper.selectAttendanceByEmpNoAndDate(empNo, today);
-    if (vo == null) {
-        attMapper.insertTodayAttendanceRow(empNo, today);
-    }
-    // 09:00 기준 정상(1) / 지각(2) 자동 판정
-    int statusCode = LocalTime.now().isAfter(LocalTime.of(9, 0)) ? 2 : 1;
-    attMapper.updateCheckIn(empNo, today, statusCode);
-}`,
-          image: semiAtt01,
-          imageLabel: "근태 전체 조회",
+// 휴가: 기간을 하루씩 순회 + 멱등 처리
+for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+    String workDate = date.toString();
+    int cnt = attMapper.checkAttendanceExists(vo.getWriterNo(), workDate);
+    if (cnt == 0) attMapper.insertVacationAttendance(vo.getWriterNo(), workDate);
+    else          attMapper.updateVacationAttendance(vo.getWriterNo(), workDate);
+}
+
+// 연장근무: 승인된 시간을 OT 컬럼에 기록
+int approvedHours = Integer.parseInt(vo.getWorkHour());
+if (cnt == 0) attMapper.insertOvertimeAttendance(vo.getWriterNo(), vo.getWorkDate(), approvedHours);
+else          attMapper.updateOvertimeAttendance(vo.getWriterNo(), vo.getWorkDate(), approvedHours);`,
+          image: semiAtt02,
+          imageLabel: "근태 상세 조회",
           flip: true,
         },
         {
           tag: "03",
-          title: "전자결재 → 근태 반영",
+          title: "급여 마스터-디테일 등록 + 확정 시 재무 전표 자동 생성",
           context:
-            "휴가·연장근무 결재가 승인되면 그 내용이 근태에 반영되어야 합니다. 다른 팀원이 담당한 결재 테이블(APPROVAL_DOC·VACATION_DOC·OVERTIME_DOC)을 조인해 승인(STATUS_CODE=2) 문서만 끌어오고, 휴가건은 기간을 일자 단위로 순회하며 반영했습니다. 같은 결재가 다시 들어와도 데이터가 깨지지 않도록 멱등하게 처리했습니다.",
+            "급여를 합계 한 줄(마스터)과 지급·공제 세부 항목(디테일)으로 분리해 저장합니다. 마스터를 먼저 등록하고 Oracle 시퀀스의 CURRVAL로 방금 생성된 급여번호를 가져와 상세 항목을 연결합니다. 확정 버튼 하나로 급여 상태가 바뀌는 동시에 같은 트랜잭션 안에서 재무 전표(급여비용 차변/보통예금 대변)가 자동 생성되고, 확정을 취소하면 역분개 전표가 생성됩니다.",
           points: [
-            "결재 테이블 크로스 조인 — 승인 문서만 카테고리별 분기",
-            "휴가 기간을 일자 단위로 순회하며 근태 반영",
-            "존재 여부 확인 후 insert/update — 중복 반영 방지",
+            "PAYROLL_MASTER / PAYROLL_DETAIL 마스터-디테일 구조",
+            "동일 사원·동일 월 중복 등록 차단, 확정된 급여는 수정·삭제 불가",
+            "확정 시 @Transactional 안에서 계정코드 5010(급여비용)/1120(보통예금) 전표 자동 생성",
+            "확정 취소 시 역분개 전표 자동 생성",
           ],
           consideration:
-            "결재 반영이 두 번 실행될 경우, 무조건 insert 하면 중복 row가 쌓이고 무조건 update 하면 최초 생성 시 실패합니다. 어느 쪽도 선택하기 어려운 상황에서 멱등하게 처리하는 방법을 고민했습니다.",
+            "급여 확정과 전표 생성 중 하나만 성공하면 인사와 재무 데이터가 어긋납니다. 두 작업을 어떻게 묶어야 정합성을 보장할 수 있을지 고민했습니다.",
           decision:
-            "결재 반영은 재실행될 수 있다고 가정했습니다. 무조건 insert 하면 중복 row가 쌓이므로, 해당일 근태 존재 여부를 먼저 확인해 있으면 update, 없으면 insert 하도록 멱등성을 확보했습니다.",
-          codeTitle: "존재 여부로 분기해 중복 반영 방지",
-          codeLanguage: "Java · Spring Boot",
-          codeSnippet: `// 휴가 기간을 하루씩 순회하며 근태에 반영
-for (LocalDate date = startDate;
-        !date.isAfter(endDate); date = date.plusDays(1)) {
-    String workDate = date.toString();
-    int cnt = attMapper.checkAttendanceExists(vo.getWriterNo(), workDate);
+            "급여 상태 변경과 전표 생성을 하나의 @Transactional 트랜잭션으로 묶었습니다. 한쪽만 반영되어 인사와 재무가 어긋나는 상황을 코드 레벨에서 원천 차단했습니다.",
+          codeTitle: "확정 → 전표 자동 생성 (단일 트랜잭션)",
+          codeLanguage: "Java · Spring Boot · MyBatis",
+          codeSnippet: `// PayService.confirmY() — 급여 확정 + 전표 자동 생성
+@Transactional
+public int confirmY(String payNo) {
+    PayMasterVo originVo = payMapper.selectOne(payNo);
+    if ("Y".equals(originVo.getConfirmYn())) return 1; // 이미 확정
+    payMapper.confirmY(payNo);
+    journalService.autoPayrollYInsert(originVo); // 전표 자동 생성
+    return 1;
+}
 
-    if (cnt == 0) {
-        attMapper.insertVacationAttendance(vo.getWriterNo(), workDate);
-    } else {
-        attMapper.updateVacationAttendance(vo.getWriterNo(), workDate);
-    }
-}`,
-          image: null,
-          imageLabel: null,
+// JournalService.autoPayrollYInsert() — 차변/대변 전표 생성
+String sharedNo = journalMapper.getJournalNo(); // 공통 전표번호 1개
+// 차변: 급여비용(5010) — 인건비 발생
+debitVo.setAccountNo("5010");
+debitVo.setDebit(Pvo.getNetAmount());
+// 대변: 보통예금(1120) — 실제 지급
+creditVo.setAccountNo("1120");
+creditVo.setCredit(Pvo.getNetAmount());`,
+          image: semiSal01,
+          imageLabel: "급여 전체 조회",
           flip: false,
         },
         {
           tag: "04",
-          title: "급여 마스터-디테일 & 재무 전표 연동",
+          title: "인적현황 대시보드 — 5개 도메인 요약을 단일 응답으로",
           context:
-            "급여를 합계 한 줄(마스터)과 지급·공제 항목(디테일)으로 나눠 저장했습니다. 마스터를 먼저 등록하고 시퀀스 CURRVAL로 방금 만든 급여번호를 받아 상세 항목을 연결합니다. 급여를 확정하면 같은 트랜잭션 안에서 재무 전표가 자동 생성되고, 확정을 취소하면 역전표가 생성되도록 인사와 재무를 묶었습니다.",
+            "인사담당자 홈 화면에서 조직 현황을 한눈에 파악할 수 있도록, 5개 도메인의 데이터를 한 번의 API 호출로 조합해 내려주는 대시보드를 구현했습니다. 전일 근태 요약, 전일 승인 결재 건수, 당월 급여 확정 현황, 최근 이슈, 로그인 직원 프로필을 각각 별도 쿼리로 조회한 뒤 단일 VO에 조합합니다. 정상출근율·급여 확정률 같은 파생 지표도 서버에서 계산해 화면에 내려줍니다.",
           points: [
-            "PAYROLL_MASTER / PAYROLL_DETAIL 마스터-디테일 구조",
-            "동일 사원·동일 월 급여 중복 등록 차단",
-            "확정 시 전표 자동 생성, 확정된 급여는 수정·삭제 차단",
+            "프로필·결재 요약·근태 요약·급여 현황·이슈를 단일 HrHomeResponseVo로 조합",
+            "정상출근율 = 정상출근 인원 / 전체 인원, 급여 확정률 = 확정 건 / 전체 건 서버 계산",
+            "데이터 없는 날 NullPointerException 방지를 위한 0 기본값 방어 처리",
           ],
           consideration:
-            "급여 확정과 전표 생성 중 하나만 성공하면 인사와 재무 데이터가 어긋납니다. 두 작업의 처리 단위를 어떻게 묶어야 정합성을 보장할 수 있는지, 확정된 급여가 이후에 수정·삭제될 경우 어떻게 막을지 고민했습니다.",
+            "5개 도메인 데이터를 화면에서 요청을 여러 번 보내면 네트워크 왕복이 늘고, 비율 계산을 화면에서 하면 표시 로직에 계산 책임이 섞입니다. 어느 레이어에서 조합하고 계산할지 고민했습니다.",
           decision:
-            "급여 합계와 항목 내역의 책임을 분리하고, 급여 상태 변경과 전표 생성은 한 트랜잭션으로 묶었습니다. 한쪽만 반영되어 인사와 재무가 어긋나는 일을 코드로 막았습니다.",
-          codeTitle: "마스터 등록 후 시퀀스로 상세를 연결",
-          codeLanguage: "Java · MyBatis",
-          codeSnippet: `// 마스터 1건 등록
-payMapper.insertMaster(vo);
-
-// 방금 만든 급여번호 회수 (SEQ_PAYROLL_MASTER.CURRVAL)
-String payNo = payMapper.selectCurrentPayNo();
-
-// 상세 항목 N건을 같은 급여번호로 연결
-for (PayDetailVo detail : vo.getDetailList()) {
-    detail.setPayNo(payNo);
-    payMapper.insertDetail(detail);
-}`,
-          image: null,
-          imageLabel: null,
-          flip: true,
-        },
-        {
-          tag: "05",
-          title: "인적현황 대시보드 (HR 홈)",
-          context:
-            "인사담당자가 한 화면에서 조직 현황을 파악할 수 있도록, 전일 기준 근태·당월 급여·승인 결재 요약을 한 번의 요청으로 조합해 내려주는 대시보드를 만들었습니다. 단순 합계가 아니라 정상출근율·급여 확정률 같은 파생 지표를 서버에서 계산해 제공했습니다.",
-          points: [
-            "프로필·결재·근태·급여·이슈를 단일 응답으로 조합",
-            "정상출근율, 급여 확정률 등 파생 지표 서버 계산",
-            "데이터가 없는 날을 대비한 0 기본값 방어 처리",
-          ],
-          consideration:
-            "여러 도메인 데이터를 한 화면에 보여줄 때 요청을 여러 번 보내면 네트워크 비용이 늘고, 비율 계산을 화면에서 하면 표시 로직에 계산 책임이 섞입니다. 어느 레이어에서 조합하고 계산할지 고민했습니다.",
-          decision:
-            "여러 번의 요청 대신 화면이 필요로 하는 형태를 서버에서 한 번에 조립했습니다. 비율 계산도 화면이 아닌 서버에서 처리해, 표시 로직과 계산 책임을 분리했습니다.",
-          codeTitle: "여러 도메인 요약을 한 응답으로 조합 · 비율 계산",
+            "화면이 필요한 형태를 서버에서 한 번에 조립하고 파생 지표도 서버에서 계산해 내려줬습니다. 화면은 받은 값을 그대로 표시만 하고, 계산 책임은 서버에 두었습니다.",
+          codeTitle: "5개 도메인 조합 + 파생 지표 서버 계산",
           codeLanguage: "Java · Spring Boot",
-          codeSnippet: `public HrHomeResponseVo selectHrHome(String loginEmpNo) {
+          codeSnippet: `// HrHomeService.selectHrHome() — 5개 도메인 요약 한 번에 조합
+public HrHomeResponseVo selectHrHome(String loginEmpNo) {
     HrHomeResponseVo res = new HrHomeResponseVo();
     res.setProfileVo(selectProfile(loginEmpNo));
-    res.setApprovalSummaryVo(selectApprovalSummary());
-    res.setAttSummaryVo(selectDayAttSummary());   // 정상출근율 계산
-    res.setPaySummaryVo(selectPaySummary());       // 확정률 계산
+    res.setApprovalSummaryVo(selectApprovalSummary()); // 전일 승인 결재 요약
+    res.setAttSummaryVo(selectDayAttSummary());         // 전일 근태 요약
+    res.setPaySummaryVo(selectPaySummary());            // 당월 급여 확정 현황
     res.setIssueVoList(selectRecentIssueList());
     return res;
 }
 
-// 정상출근율 = 정상출근 인원 / 전체 인원
+// 정상출근율 계산 (서버에서 처리 → 화면은 표시만)
 double rate = (double) vo.getNormalCount() * 100 / vo.getTotalEmpCount();
-vo.setNormalRate(Math.round(rate * 10) / 10.0);`,
-          image: null,
-          imageLabel: null,
-          flip: false,
+vo.setNormalRate(Math.round(rate * 10) / 10.0);
+
+// 급여 확정률 계산
+int rate = vo.getConfirmedCount() * 100 / vo.getTargetCount();
+vo.setConfirmRate(rate);`,
+          image: semiThumb,
+          imageLabel: "인적현황 대시보드",
+          flip: true,
         },
       ],
 
