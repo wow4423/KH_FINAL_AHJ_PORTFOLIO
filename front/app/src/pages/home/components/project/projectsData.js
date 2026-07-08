@@ -5,6 +5,18 @@ import finalPreview03 from "../../../../assets/images/finalPrj/storePreview3.png
 import finalPreview04 from "../../../../assets/images/finalPrj/storePreview4.png";
 import finalPreview05 from "../../../../assets/images/finalPrj/storePreview5.png";
 
+import semiThumb from "../../../../assets/images/semiPrj/세미_인적대시보드.png";
+import semiEmp01 from "../../../../assets/images/semiPrj/세미_직원전체조회.png";
+import semiEmp02 from "../../../../assets/images/semiPrj/세미_직원상세조회.png";
+import semiEmp03 from "../../../../assets/images/semiPrj/세미_직원정보수정.png";
+import semiDept from "../../../../assets/images/semiPrj/세미_부서상세조회.png";
+import semiAtt01 from "../../../../assets/images/semiPrj/세미_근태전체조회.png";
+import semiAtt02 from "../../../../assets/images/semiPrj/세미_근태상세조회.png";
+import semiAtt03 from "../../../../assets/images/semiPrj/세미_근태수정.png";
+import semiSal01 from "../../../../assets/images/semiPrj/세미_급여전체조회.png";
+import semiSal02 from "../../../../assets/images/semiPrj/세미_급여상세조회.png";
+import semiSal03 from "../../../../assets/images/semiPrj/세미_급여등록.png";
+
 export const projects = [
   {
     id: "semi",
@@ -14,7 +26,7 @@ export const projects = [
       "한 사람의 근태·결재·급여가 어긋나지 않게 이어지도록, 스키마부터 흐름까지 설계한 인적자원관리 모듈",
     period: "2026.02 - 2026.03",
     role: "DB 관리자 · 인적자원관리(HR) 도메인 풀스택",
-    thumbnail: null,
+    thumbnail: semiThumb,
     colorText: "ERP",
     stack: ["Java", "Spring Boot", "MyBatis", "Oracle", "JSP & Servlet", "Spring Security"],
     links: [
@@ -100,8 +112,8 @@ export const projects = [
   LEFT JOIN STORE S           ON S.OWNER_EMP_NO = M.EMP_NO  -- 점주면 매장 소속
   LEFT JOIN CURRENT_STATUS CS ON M.EMP_STATUS_NO = CS.EMP_STATUS_NO
  WHERE M.QUIT_YN = 'N'  -- 소프트 삭제: 퇴사자 제외`,
-          image: null,
-          imageLabel: null,
+          image: semiEmp01,
+          imageLabel: "직원 전체 조회",
           flip: false,
         },
         {
@@ -140,8 +152,8 @@ public void checkIn(String empNo) {
     int statusCode = LocalTime.now().isAfter(LocalTime.of(9, 0)) ? 2 : 1;
     attMapper.updateCheckIn(empNo, today, statusCode);
 }`,
-          image: null,
-          imageLabel: null,
+          image: semiAtt01,
+          imageLabel: "근태 전체 조회",
           flip: true,
         },
         {
