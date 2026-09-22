@@ -15,6 +15,8 @@
 .media-slide .video-layout{display:grid;grid-template-columns:minmax(0,1fr) 175px;gap:30px;align-items:center}
 .media-slide .video-layout video{width:100%;max-height:49vh;aspect-ratio:16/9;object-fit:contain}
 .media-slide .stats-rail{display:grid;gap:30px;border:0;padding:0}
+.media-slide .stats-rail>div{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.media-slide .stats-rail .metric-label,.media-slide .stats-rail .metric{white-space:nowrap;margin:0}
 .film-intro{display:grid;grid-template-columns:2.65fr 1fr;gap:35px;align-items:center}
 .film-intro .youtube-shell{max-height:57vh;border:0;border-radius:6px}
 .film-kind{display:block;font-size:12px;letter-spacing:.06em;color:#bca78e;margin-bottom:20px}
