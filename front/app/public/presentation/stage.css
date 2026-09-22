@@ -155,3 +155,15 @@
  .combine-map article>div:last-child{padding-left:16px;border-left:2px solid #d89968}
  .ending-thesis p{font-size:24px}
 }
+
+/* Five concise illustrations explain each production step. */
+.responsibility .production-flow{gap:20px}
+.responsibility .production-flow article{border:0;padding:0;min-width:0}
+.process-picture{position:relative;margin-bottom:20px}
+.editorial .process-picture img{width:100%;aspect-ratio:14/9;object-fit:contain;border-radius:9px}
+.process-picture .flow-index{position:absolute;left:10px;top:10px;margin:0;padding:4px 7px;border-radius:5px;background:#161512de;color:#ffb77f;font-size:16px;line-height:1;font-weight:650}
+.responsibility .production-flow h3{font-size:clamp(22px,2vw,30px);margin-bottom:12px}
+.responsibility .production-flow p{font-size:clamp(18px,1.5vw,23px);line-height:1.6}
+.responsibility .scope-band{margin-top:29px}
+@media(min-width:801px) and (max-height:800px){.responsibility .process-picture{margin-bottom:17px}.responsibility .production-flow h3{font-size:25px}.responsibility .production-flow p{font-size:19px}.responsibility .scope-band{margin-top:24px}}
+@media(max-width:800px){.responsibility .production-flow{grid-template-columns:repeat(2,minmax(0,1fr));gap:25px 18px}.responsibility .production-flow h3{font-size:24px}.responsibility .production-flow p{font-size:18px}.process-picture{margin-bottom:14px}}
