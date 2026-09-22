@@ -127,3 +127,8 @@
  .message-bar{display:block;font-size:18px}.message-bar strong{display:block;font-size:24px;margin-top:7px}.final-banner{flex-wrap:wrap;font-size:23px;gap:13px}.final-banner strong{font-size:26px}
 }
 @media(max-width:480px){.tool-pipeline{grid-template-columns:1fr}.tool-visual{height:190px}.direction-sheet{gap:8px}.direction-sheet article>b{font-size:21px}.direction-sheet p{font-size:15px}.film-facts strong{font-size:31px}.big-price{font-size:40px}.big-price span{display:block;margin:7px 0 0}.price-line{font-size:17px}.price-line strong{font-size:18px}.before-after article{padding:19px}.cut-demo{grid-template-columns:1fr 22px 1fr;gap:8px}.cut-demo span{font-size:14px}.pipeline-caption{font-size:14px;gap:17px}}
+
+/* Editing tools: concise roles beneath the final production step. */
+.tool-pipeline .editing-tools{display:grid;gap:7px;margin-top:12px}
+.tool-pipeline .editing-tools p{display:grid;grid-template-columns:64px minmax(0,1fr);gap:9px;margin:0;font-size:14px;line-height:1.45}
+.editing-tools strong{font-weight:600;color:#f5dbc1;white-space:nowrap}.editing-tools span{color:#b7aa9a;word-break:keep-all}
